@@ -1,5 +1,5 @@
 <template>
-  <div class="asignments-resource-list-header">
+  <div class="assignments-resource-list-header">
     <SimpleStack distribution="spaceBetween" alignment="top">
       <SimpleStack
         distribution="spaceBetween"
@@ -7,7 +7,7 @@
         spacing="15px"
       >
         <template #default="style">
-          <span class="asignments-resource-list-title" :style="style.spacing">
+          <span class="assignments-resource-list-title" :style="style.spacing">
             提出物一覧
           </span>
           <div :style="style.spacing">
@@ -69,10 +69,10 @@ export default defineComponent({
 </script>
 <style scoped lang="scss">
 @use '@simple-education-dev/tokens/styles' as *;
-.asignments-resource-list-header {
+.assignments-resource-list-header {
   padding: $space-3;
 }
-.asignments-resource-list-title {
+.assignments-resource-list-title {
   font-size: $font-size-8;
 }
 </style>

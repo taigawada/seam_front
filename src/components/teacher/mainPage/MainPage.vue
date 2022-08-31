@@ -1,43 +1,62 @@
 <template>
-  <div class="main-page-container">
+  <div v-if="isMainPage" class="main-page-container">
     <div class="landing-page-content">
-      <NotificationBanners :asignments="asignments" />
-      <AsignmentResourcelist />
-      <div class="asignments-resource-list">resource-list</div>
+      <div v-if="allAssignments.length === 0">
+        <MainPageEmptyState />
+      </div>
+      <div v-else>
+        <NotificationBanners :assignments="assignments" />
+        <AssignmentResourcelist />
+        <div class="assignments-resource-list">resource-list</div>
+      </div>
     </div>
     <div class="main-page-buttons">
-      <ActionsButton :onClick="handleAddAsignment" />
+      <ActionsButton :onClick="handleAddAssignment" />
     </div>
     <div class="quick-assignment-add-card">
-      <QuickAddAsignment />
+      <QuickAddAssignment />
     </div>
+  </div>
+  <div v-else>
+    <assignmentDetailSettings />
   </div>
 </template>
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
 import { SimpleStack, SimpleButton } from '@simple-education-dev/components';
-import NotificationBanners from './NotificationBanners.vue';
-import AsignmentResourcelist from './AsignmentResourcelist.vue';
-import QuickAddAsignment from './QuickAddAsignment.vue';
-import ActionsButton from './ActionsButton.vue';
+
+// mainPage
+import NotificationBanners from './landingPage/NotificationBanners.vue';
+import AssignmentResourcelist from './landingPage/AssignmentResourcelist.vue';
+import QuickAddAssignment from './landingPage/QuickAddAssignment.vue';
+import ActionsButton from './landingPage/ActionsButton.vue';
+import MainPageEmptyState from './landingPage/MainPageEmptyState.vue';
+
+import assignmentDetailSettings from './asignmentDetailSettings/assignmentDetailSettings.vue';
 
 export default defineComponent({
   components: {
     SimpleStack,
     SimpleButton,
     NotificationBanners,
-    AsignmentResourcelist,
+    AssignmentResourcelist,
     ActionsButton,
-    QuickAddAsignment,
+    QuickAddAssignment,
+    MainPageEmptyState,
+    assignmentDetailSettings,
   },
   setup() {
-    const asignments = ['宿題1', '宿題2', '宿題3', '宿題4'];
-    const handleAddAsignment = () => {
-      console.log('提出物追加');
+    const isMainPage = ref(true);
+    const allAssignments: [] = [];
+    const assignments = ['宿題1', '宿題2', '宿題3', '宿題4'];
+    const handleAddAssignment = () => {
+      isMainPage.value = false;
     };
     return {
-      asignments,
-      handleAddAsignment,
+      allAssignments,
+      assignments,
+      isMainPage,
+      handleAddAssignment,
     };
   },
 });
@@ -56,6 +75,7 @@ export default defineComponent({
     "content    card"
 }
 .main-page-buttons {
+  margin-top: $space-8;
   grid-area: buttons;
   align-self: center;
 }
@@ -63,7 +83,7 @@ export default defineComponent({
   grid-area: content;
   padding: $space-4;
 }
-.asignments-resource-list {
+.assignments-resource-list {
   background: lightcoral;
   height: 80vh;
 }

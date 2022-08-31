@@ -1,16 +1,16 @@
 <template>
   <div>
     <SimpleBanner
-      v-for="asignment in showAsignments"
-      :key="asignment"
+      v-for="assignment in showAssignments"
+      :key="assignment"
       class="simple-banner"
       title="今日までの提出物"
       :buttonLabel="'確認'"
     >
-      <span class="simple-banner-inner-text">{{ asignment }}</span>
+      <span class="simple-banner-inner-text">{{ assignment }}</span>
     </SimpleBanner>
-    <SimpleStack v-show="surplusAsignments > 0" distribution="right">
-      <span>その他 {{ surplusAsignments }}件</span>
+    <SimpleStack v-show="surplusAssignments > 0" distribution="right">
+      <span>その他 {{ surplusAssignments }}件</span>
       <SimpleButton plain @click="handleShowAllDeadline">
         {{ showAllDeadline ? '元に戻す' : '全て確認' }}
       </SimpleButton>
@@ -32,24 +32,24 @@ export default defineComponent({
     SimpleButton,
   },
   props: {
-    asignments: {
+    assignments: {
       type: Array as PropType<string[]>,
       required: true,
     },
   },
   setup(props) {
-    const showAsignments = computed(() => props.asignments.splice(0, 3));
-    const surplusAsignments = computed(() => {
-      return props.asignments.length - 3;
+    const showAssignments = computed(() => props.assignments.splice(0, 3));
+    const surplusAssignments = computed(() => {
+      return props.assignments.length - 3;
     });
-    surplusAsignments.value;
+    surplusAssignments.value;
     const showAllDeadline = ref(false);
     const handleShowAllDeadline = () => {
       showAllDeadline.value = !showAllDeadline.value;
     };
     return {
-      showAsignments,
-      surplusAsignments,
+      showAssignments,
+      surplusAssignments,
       showAllDeadline,
       handleShowAllDeadline,
     };

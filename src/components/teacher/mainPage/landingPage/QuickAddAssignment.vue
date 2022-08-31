@@ -1,6 +1,6 @@
 <template>
   <SimpleCard
-    class="quick-add-asigment-card"
+    class="quick-add-assigment-card"
     :mainAction="{
       label: '追加',
       disabled: cantAdd,
@@ -9,41 +9,44 @@
       label: '詳細設定',
     }"
   >
-    <SimpleInput
-      :value="title"
-      caption="提出物タイトル"
-      @change:value="handleTitleChange"
-    />
-    <SimpleDateTimePicker
-      caption="提出期限"
-      :inputValue="deadlineInputValue"
-      @change:datetime="handleDeadlineChange"
-    />
-    <SimpleSelector
-      caption="提出方法"
-      :value="method"
-      :items="methods"
-      @change:select="handleMethodChange"
-    />
-    <SimpleInput
-      v-show="method === 'other'"
-      captionHidden
-      placeholder="その他..."
-      :value="otherMethods"
-      @change:value="handleOtherMethodsChange"
-    />
-    <TipTapEditor
-      caption="説明"
-      placeholder="説明を入力..."
-      :value="discription"
-      @change:editor="handleQuillEditorChange"
-    />
+    <div class="quick-add-assigment-card-content">
+      <SimpleInput
+        :value="title"
+        caption="提出物タイトル"
+        @change:value="handleTitleChange"
+      />
+      <SimpleDateTimePicker
+        caption="提出期限"
+        :inputValue="deadlineInputValue"
+        @change:datetime="handleDeadlineChange"
+      />
+      <SimpleSelector
+        caption="提出方法"
+        :value="method"
+        :items="methods"
+        @change:select="handleMethodChange"
+      />
+      <SimpleInput
+        v-show="method === 'other'"
+        captionHidden
+        placeholder="その他..."
+        :value="otherMethods"
+        @change:value="handleOtherMethodsChange"
+      />
+      <p>{{ discription }}</p>
+      <TipTapEditor
+        caption="説明"
+        placeholder="説明を入力..."
+        :value="discription"
+        @change:editor="handleQuillEditorChange"
+      />
+    </div>
   </SimpleCard>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
-import { useQuickAddAsignment } from '../compositions/mainPage/useQuickAddAsignment';
-import TipTapEditor from '../../TipTapEditor/TipTapEditor.vue';
+import { useQuickAddAssignment } from '../../compositions/mainPage/useQuickAddAssignment';
+import TipTapEditor from '../../../TipTapEditor/TipTapEditor.vue';
 import {
   SimpleCard,
   SimpleInput,
@@ -69,7 +72,7 @@ export default defineComponent({
       methods,
       otherMethods,
       cantAdd,
-    } = useQuickAddAsignment();
+    } = useQuickAddAssignment();
     const handleTitleChange = (newValue: string) => {
       title.value = newValue;
     };
@@ -107,8 +110,11 @@ export default defineComponent({
 </script>
 <style scoped lang="scss">
 @use '@simple-education-dev/tokens/styles' as *;
-.quick-add-asigment-card {
+.quick-add-assigment-card {
   margin-top: $space-3;
   text-align: left;
+}
+.quick-add-assigment-card-content {
+  padding: $space-10 $space-10 $space-5 $space-10;
 }
 </style>

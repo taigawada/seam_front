@@ -1,7 +1,7 @@
 import { ref, computed } from '@vue/composition-api';
 import { isPast, isValid } from 'date-fns';
 
-export const useQuickAddAsignment = () => {
+export const useQuickAddAssignment = () => {
   const title = ref('');
   const deadlineInputValue = ref('');
   const deadline = ref<Date>();
