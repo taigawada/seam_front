@@ -1,6 +1,7 @@
-eils_fromtのpackage.jsonからの変更点
+eils_front の package.json からの変更点
 
-vue-cliからviteに変更に伴い、下記を変更　　
+vue-cli から vite に変更に伴い、下記を変更
+
 ```
 /devDependencies
 - "@vue/cli-plugin-babel": "~4.5.0",
@@ -12,4 +13,3 @@ vue-cliからviteに変更に伴い、下記を変更　　
 + "eslint-config-prettier": "^6.15.0",
 + "prettier": "^2.7.1",
 ```
-
