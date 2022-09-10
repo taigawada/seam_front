@@ -1,10 +1,11 @@
 <template>
   <div>
     <SimpleModal
-      :open="pageTransitionWarningModalOpen"
+      :open="$store.getters.cantTransitionModalOpen"
       title="ページを離れますか?"
       :mainAction="{
         text: 'ページから移動',
+        isError: true,
         onAction: pageTransitionClick,
       }"
       :subAction="{
@@ -29,6 +30,7 @@
 import { computed, defineComponent, ref } from '@vue/composition-api';
 import { SimpleTabs, SimpleModal } from '@simple-education-dev/components';
 import { useStore } from '../../store/useStore';
+import { useTransitionWarning } from './useTransitionWarning';
 import MainPage from './mainPage/MainPage.vue';
 import SettingsPage from './settingsPage/SettingsPage.vue';
 export default defineComponent({
@@ -51,40 +53,21 @@ export default defineComponent({
       },
     ];
     const tabSelected = ref(0);
-    const pageTransitionWarningModalOpen = ref(false);
-    const pageTransition = ref<((arg0: boolean) => void) | null>(null);
-    const pageTransitionPromise = () =>
-      new Promise((resolve) => {
-        pageTransition.value = resolve;
-      });
     const handleTabSelect = async (select: number) => {
-      // if (store.getters.cantTransition) {
-      pageTransitionWarningModalOpen.value = true;
-      const result = await pageTransitionPromise();
-      if (result) {
+      useTransitionWarning(store, () => {
         tabSelected.value = select;
-      }
-      pageTransitionWarningModalOpen.value = false;
-      pageTransition.value = null;
-      // } else {
-      //   tabSelected.value = select;
-      // }
+      });
     };
     const pageTransitionClick = () => {
-      if (pageTransition.value !== null) {
-        pageTransition.value(true);
-      }
+      store.dispatch('pageTransitionWaiterResolve');
     };
     const pageTransitionCancel = () => {
-      if (pageTransition.value !== null) {
-        pageTransition.value(false);
-      }
+      store.dispatch('pageTransitionWaiterReject');
     };
     const currentPage = computed(() => {
       return tabs[tabSelected.value].id;
     });
     return {
-      pageTransitionWarningModalOpen,
       pageTransitionClick,
       pageTransitionCancel,
       tabs,

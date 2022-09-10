@@ -21,6 +21,7 @@
       title="全ての変更を破棄"
       :mainAction="{
         text: '破棄',
+        isError: true,
         onAction: handleSettingsdestrunction,
       }"
       :subAction="{
@@ -29,7 +30,9 @@
       }"
       @destroy="handleDestructionModalDestroy"
     >
-      <p>全ての変更が破棄され、元に戻すことはできません。</p>
+      <p style="text-align: left">
+        全ての変更が破棄され、元に戻すことはできません。
+      </p>
     </SimpleModal>
     <div class="detail-settings-container">
       <SimpleButton

@@ -1,6 +1,5 @@
 eils_front の package.json からの変更点
-
-vue-cli から vite に変更に伴い、下記を変更
+vue-cli から vite 変更に伴い、下記を変更
 
 ```
 /devDependencies
@@ -17,6 +16,8 @@ vue-cli から vite に変更に伴い、下記を変更
 "prettier": "^2.7.1",
 ```
 
+依存モジュールの追加
+
 ```
 /dependencies
 // 追加
@@ -31,6 +32,27 @@ vue-cli から vite に変更に伴い、下記を変更
 "vue-i18n-bridge": "^9.2.2",
 ```
 
-/ ts-config.json
+JSON を import するため、以下を変更
+
+```
+/ tsconfig.json
 // 追加
 "resolveJsonModule": true,
+```
+
+メモ
+ページ遷移前に警告するモーダルを開くために、CBT 側で提出物管理から移動するとき、以下の関数を噛ませてほしい
+
+```
+// before
+const handleClick = () => {
+  ページ移動
+}
+// after
+import { useTransitionWarning } from '~/useTransitionWarning'
+const handleClick = () => {
+    useTransitionWarning(this.$store, () => {
+        ページ移動
+    })
+}
+```
