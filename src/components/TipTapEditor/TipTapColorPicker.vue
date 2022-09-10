@@ -97,7 +97,7 @@ export default defineComponent({
   background: $surface;
   margin-top: 35px;
   transform: translate(calc(-9px - 50%));
-  box-shadow: $boxshadow;
+  box-shadow: $box-shadow-1;
   cursor: auto;
 }
 .tiptap-editor-color-picker-float-box::before {

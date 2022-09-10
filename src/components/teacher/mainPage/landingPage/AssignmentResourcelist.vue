@@ -11,7 +11,7 @@
             提出物一覧
           </span>
           <div :style="style.spacing">
-            <SimpleButton plain> 期限を過ぎた提出物を含めて表示 </SimpleButton>
+            <SimpleButton plain> 期限を過ぎた提出物を表示 </SimpleButton>
           </div>
         </template>
       </SimpleStack>
@@ -53,9 +53,11 @@ export default defineComponent({
       },
     ];
     const handleToggle = () => {
+      console.log('toggle');
       exportActionsOpen.value = !exportActionsOpen.value;
     };
     const handleClose = () => {
+      console.log('close');
       exportActionsOpen.value = false;
     };
     return {

@@ -1,62 +1,94 @@
 <template>
-  <div v-if="isMainPage" class="main-page-container">
+  <div v-if="nowPage === null">
+    <MainPageSkelton @toDetailSettings="handleToDetailSettings" />
+  </div>
+  <div v-else-if="nowPage === 'mainPage'" class="main-page-container">
     <div class="landing-page-content">
-      <div v-if="allAssignments.length === 0">
+      <NotificationCards :assignments="assignments" />
+      <div v-if="allAssignments.length == 0">
         <MainPageEmptyState />
       </div>
       <div v-else>
-        <NotificationBanners :assignments="assignments" />
         <AssignmentResourcelist />
         <div class="assignments-resource-list">resource-list</div>
       </div>
     </div>
     <div class="main-page-buttons">
-      <ActionsButton :onClick="handleAddAssignment" />
+      <ActionsButton :onClick="transitionToAssignmentDetailSettingsPage" />
     </div>
     <div class="quick-assignment-add-card">
-      <QuickAddAssignment />
+      <QuickAddAssignment @toDetailSettings="handleToDetailSettings" />
     </div>
   </div>
-  <div v-else>
-    <assignmentDetailSettings />
+  <div v-else-if="nowPage === 'assignmentDetailSettings'">
+    <AssignmentDetailSettings
+      :initialValue="initialValue"
+      @previous="transitionToMainPage"
+    />
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent, onMounted, ref } from '@vue/composition-api';
+import { useStore } from '../../../store/useStore';
 import { SimpleStack, SimpleButton } from '@simple-education-dev/components';
 
+import { AssignmentDetailSettings as AssignmentDetailSettingsTypes } from './asignmentDetailSettings/useAssignmentDetailSettings';
+
 // mainPage
-import NotificationBanners from './landingPage/NotificationBanners.vue';
+import NotificationCards from './landingPage/NotificationCards.vue';
 import AssignmentResourcelist from './landingPage/AssignmentResourcelist.vue';
 import QuickAddAssignment from './landingPage/QuickAddAssignment.vue';
 import ActionsButton from './landingPage/ActionsButton.vue';
-import MainPageEmptyState from './landingPage/MainPageEmptyState.vue';
+import MainPageEmptyState from './landingPage/ResourcelistEmptyState.vue';
 
-import assignmentDetailSettings from './asignmentDetailSettings/assignmentDetailSettings.vue';
+import AssignmentDetailSettings from './asignmentDetailSettings/AssignmentDetailSettings.vue';
+
+// Skelton
+import MainPageSkelton from './MainPageSkelton.vue';
 
 export default defineComponent({
   components: {
     SimpleStack,
     SimpleButton,
-    NotificationBanners,
+    MainPageSkelton,
+    NotificationCards,
     AssignmentResourcelist,
     ActionsButton,
     QuickAddAssignment,
     MainPageEmptyState,
-    assignmentDetailSettings,
+    AssignmentDetailSettings,
   },
-  setup() {
-    const isMainPage = ref(true);
+  setup(_, context) {
+    const store = useStore(context);
+    onMounted(async () => {
+      store.dispatch('getHolidays');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // nowPage.value = 0;
+    });
+    const nowPage = ref<'mainPage' | 'assignmentDetailSettings'>('mainPage');
     const allAssignments: [] = [];
     const assignments = ['宿題1', '宿題2', '宿題3', '宿題4'];
-    const handleAddAssignment = () => {
-      isMainPage.value = false;
+    const transitionToAssignmentDetailSettingsPage = () => {
+      nowPage.value = 'assignmentDetailSettings';
+    };
+    const transitionToMainPage = () => {
+      nowPage.value = 'mainPage';
+    };
+    const initialValue = ref<AssignmentDetailSettingsTypes>({});
+    const handleToDetailSettings = (
+      currentSettings: AssignmentDetailSettingsTypes
+    ) => {
+      nowPage.value = 'assignmentDetailSettings';
+      initialValue.value = currentSettings;
     };
     return {
       allAssignments,
       assignments,
-      isMainPage,
-      handleAddAssignment,
+      nowPage,
+      transitionToAssignmentDetailSettingsPage,
+      transitionToMainPage,
+      initialValue,
+      handleToDetailSettings,
     };
   },
 });

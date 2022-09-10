@@ -2,13 +2,6 @@
   <div class="simple-pagination_container">
     <SimpleStack spacing="10px">
       <template #default="style">
-        <!-- <SimpleIcon
-          :style="style.spacing"
-          :source="ArrowLeft"
-          size="14px"
-          clickable
-          @click="handlePreviousPage"
-        ></SimpleIcon> -->
         <div
           v-for="index in length"
           v-show="length < 8"
@@ -39,8 +32,6 @@
           }"
           :source="ThreePointLeader"
           size="18px"
-          clickable
-          @click="handleNextPage"
         ></SimpleIcon>
         <div
           v-for="lastThreeIndex in 3"
@@ -53,16 +44,8 @@
           :style="style.spacing"
           @click="handleChange(length + lastThreeIndex - 4)"
         ></div>
-        <!-- <SimpleIcon
-          :style="style.spacing"
-          :source="ArrowRight"
-          size="14px"
-          clickable
-          @click="handleNextPage"
-        ></SimpleIcon> -->
       </template>
     </SimpleStack>
-    <!-- <div>{{ current + 1 }}{{ suffix }} / {{ length }}{{ suffix }}</div> -->
   </div>
 </template>
 <script lang="ts">
@@ -95,16 +78,6 @@ export default defineComponent({
     },
   },
   setup(props, context) {
-    const handlePreviousPage = () => {
-      if (props.current > 0) {
-        context.emit('previous');
-      }
-    };
-    const handleNextPage = () => {
-      if (props.current < props.length - 1) {
-        context.emit('next');
-      }
-    };
     const handleChange = (index: number) => {
       context.emit('change', index);
     };
@@ -118,8 +91,6 @@ export default defineComponent({
       ArrowLeft,
       ArrowRight,
       ThreePointLeader,
-      handlePreviousPage,
-      handleNextPage,
       handleChange,
       isSelected,
       isIntermediateSelected,

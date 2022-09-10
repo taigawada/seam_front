@@ -180,6 +180,7 @@ export default defineComponent({
 .ProseMirror {
   font-family: Helvetica, Arial, sans-serif;
   border-radius: $border-radius-1;
+  background: $surface;
   padding-top: 0;
   padding-left: $space-3;
   padding-right: $space-3;

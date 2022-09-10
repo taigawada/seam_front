@@ -260,7 +260,7 @@ export default defineComponent({
   height: 30px;
   width: 90%;
   border-radius: $border-radius-05;
-  box-shadow: $boxshadow;
+  box-shadow: $box-shadow-1;
   left: 50%;
   bottom: 10px;
   transform: translateX(-50%);

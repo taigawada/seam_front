@@ -6,14 +6,17 @@
     "serve": "vite",
     "lint": "vue-cli-service lint",
     "prod-build": "vue-cli-service build --mode production",
+    "kanji-check": "kanji-checker src/components/student/i18n/grades",
     "prod-serve": "vue-cli-service serve --mode production",
-    "reinstall": "npm rm @simple-education-dev/components && npm i ../materials/simple-education-dev-components-0.1.1.tgz"
+    "reinstall": "npm rm @simple-education-dev/components && npm i ../materials/simple-education-dev-components-0.1.1.tgz",
+    "reinstall:kanji": "npm rm @simple-education-dev/kanji-checker && npm i ../kanji-checker/simple-education-dev-kanji-checker-0.0.1.tgz"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/vue-fontawesome": "^2.0.2",
     "@simple-education-dev/components": "file:../materials/simple-education-dev-components-0.1.1.tgz",
+    "@simple-education-dev/kanji-checker": "file:../kanji-checker/simple-education-dev-kanji-checker-0.0.1.tgz",
     "@tiptap/extension-color": "^2.0.0-beta.12",
     "@tiptap/extension-link": "^2.0.0-beta.43",
     "@tiptap/extension-placeholder": "^2.0.0-beta.53",
@@ -32,13 +35,14 @@
     "sass": "^1.42.1",
     "sass-loader": "^10",
     "typescript": "^4.4.3",
-    "vue": "^2.6.11",
+    "vue": "2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-ctk-date-time-picker": "^2.5.0",
     "vue-froala-wysiwyg": "^4.0.9",
+    "vue-i18n": "^8.27.2",
+    "vue-i18n-bridge": "^9.2.2",
     "vue-loading-overlay": "^3.0",
     "vue-property-decorator": "^9.1.2",
-    "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.5.2",
     "vue-select": "^3.13.0",
     "vue-text-highlight": "^2.0.10",
@@ -47,6 +51,7 @@
     "vuex": "^3.6.2"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.184",
     "@types/node": "^18.7.13",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
@@ -59,7 +64,7 @@
     "typescript": "~4.1.5",
     "vite": "^3.0.9",
     "vite-plugin-vue2": "^2.0.2",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "2.6.11"
   },
   "browserslist": [
     "> 1%",

@@ -7,6 +7,7 @@
     }"
     :subAction="{
       label: '詳細設定',
+      onAction: toDetailSettings,
     }"
   >
     <div class="quick-add-assigment-card-content">
@@ -22,30 +23,22 @@
       />
       <SimpleSelector
         caption="提出方法"
-        :value="method"
+        :value="submitMethod"
         :items="methods"
         @change:select="handleMethodChange"
       />
-      <SimpleInput
-        v-show="method === 'other'"
-        captionHidden
-        placeholder="その他..."
-        :value="otherMethods"
-        @change:value="handleOtherMethodsChange"
-      />
-      <p>{{ discription }}</p>
       <TipTapEditor
         caption="説明"
         placeholder="説明を入力..."
         :value="discription"
-        @change:editor="handleQuillEditorChange"
+        @change:editor="handleDiscriptionChange"
       />
     </div>
   </SimpleCard>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
-import { useQuickAddAssignment } from '../../compositions/mainPage/useQuickAddAssignment';
+import { useQuickAddAssignment } from './useQuickAddAssignment';
 import TipTapEditor from '../../../TipTapEditor/TipTapEditor.vue';
 import {
   SimpleCard,
@@ -63,16 +56,19 @@ export default defineComponent({
     SimpleSelector,
     TipTapEditor,
   },
-  setup() {
-    const {
-      title,
-      deadline,
-      deadlineInputValue,
-      method,
-      methods,
-      otherMethods,
-      cantAdd,
-    } = useQuickAddAssignment();
+  setup(_, context) {
+    const { title, deadline, deadlineInputValue, submitMethod, cantAdd } =
+      useQuickAddAssignment();
+    const methods = [
+      {
+        label: '朝のHRまでに回収',
+        value: '朝のHRまでに回収',
+      },
+      {
+        label: '帰りのHRで回収',
+        value: '帰りのHRで回収',
+      },
+    ];
     const handleTitleChange = (newValue: string) => {
       title.value = newValue;
     };
@@ -81,29 +77,33 @@ export default defineComponent({
       deadlineInputValue.value = format(newValue, 'yyyy年MM月dd日HH時mm分');
     };
     const handleMethodChange = (newValue: string) => {
-      method.value = newValue;
-    };
-    const handleOtherMethodsChange = (newValue: string) => {
-      otherMethods.value = newValue;
+      submitMethod.value = newValue;
     };
     const discription = ref<object | null>(null);
-    const handleQuillEditorChange = (newValue: object) => {
+    const handleDiscriptionChange = (newValue: object) => {
       discription.value = newValue;
+    };
+    const toDetailSettings = () => {
+      context.emit('toDetailSettings', {
+        title: title.value,
+        description: discription.value,
+        deadline: deadline.value,
+        submitMethod: submitMethod.value,
+      });
     };
     return {
       title,
       deadline,
       deadlineInputValue,
       handleDeadlineChange,
-      method,
+      submitMethod,
       methods,
-      otherMethods,
-      handleOtherMethodsChange,
       handleMethodChange,
       handleTitleChange,
       discription,
-      handleQuillEditorChange,
+      handleDiscriptionChange,
       cantAdd,
+      toDetailSettings,
     };
   },
 });

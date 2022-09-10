@@ -8,6 +8,9 @@ import { defineComponent } from '@vue/composition-api';
 export default defineComponent({});
 </script>
 <style lang="scss">
+body {
+  background-color: #f4f8f9;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   text-align: center;

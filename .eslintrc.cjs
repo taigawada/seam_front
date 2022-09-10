@@ -18,12 +18,14 @@ module.exports = {
   rules: {
     indent: ['error', 2, { SwitchCase: 1 }],
     quotes: ['error', 'single'],
-    'no-unused-vars': ['error', { argsIgnorePattern: 'arg[0-9]{1,2}' }],
+    'no-unused-vars': ['error', { argsIgnorePattern: '_|arg[0-9]{1,2}' }],
     'vue/html-indent': ['error', 2],
     'vue/attribute-hyphenation': ['off'],
     'vue/v-on-event-hyphenation': ['off'],
     'vue/max-attributes-per-line': ['off'],
     'vue/singleline-html-element-content-newline': ['off'],
     'vue/html-self-closing': ['off'],
+    'no-constant-condition': ['error', { checkLoops: false }],
+    'vue/no-v-html': ['off'],
   },
 };
