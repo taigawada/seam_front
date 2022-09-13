@@ -1,11 +1,8 @@
 <template>
-  <div v-if="nowPage === null">
-    <MainPageSkelton @toDetailSettings="handleToDetailSettings" />
-  </div>
-  <div v-else-if="nowPage === 'mainPage'" class="main-page-container">
+  <div v-if="nowPage === 'mainPage'" class="main-page-container">
     <div class="landing-page-content">
       <NotificationCards :assignments="assignments" />
-      <div v-if="allAssignments.length == 0">
+      <div v-if="allAssignments.length !== 0">
         <MainPageEmptyState />
       </div>
       <div v-else>
@@ -22,13 +19,15 @@
   </div>
   <div v-else-if="nowPage === 'assignmentDetailSettings'">
     <AssignmentDetailSettings
+      v-if="initialValue !== null"
       :initialValue="initialValue"
       @previous="transitionToMainPage"
     />
+    <AssignmentDetailSettingsSkelton v-else />
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, onMounted, ref } from '@vue/composition-api';
+import { defineComponent, ref } from '@vue/composition-api';
 import { useStore } from '../../../store/useStore';
 import { SimpleStack, SimpleButton } from '@simple-education-dev/components';
 
@@ -45,6 +44,7 @@ import AssignmentDetailSettings from './asignmentDetailSettings/AssignmentDetail
 
 // Skelton
 import MainPageSkelton from './MainPageSkelton.vue';
+import AssignmentDetailSettingsSkelton from './asignmentDetailSettings/AssignmentDetailSettingsSkelton.vue';
 
 export default defineComponent({
   components: {
@@ -57,15 +57,13 @@ export default defineComponent({
     QuickAddAssignment,
     MainPageEmptyState,
     AssignmentDetailSettings,
+    AssignmentDetailSettingsSkelton,
   },
   setup(_, context) {
     const store = useStore(context);
-    onMounted(async () => {
-      store.dispatch('getHolidays');
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      // nowPage.value = 0;
-    });
     const nowPage = ref<'mainPage' | 'assignmentDetailSettings'>('mainPage');
+    const initialValue = ref<AssignmentDetailSettingsTypes | null>({});
+    store.dispatch('getHolidays');
     const allAssignments: [] = [];
     const assignments = ['宿題1', '宿題2', '宿題3', '宿題4'];
     const transitionToAssignmentDetailSettingsPage = () => {
@@ -74,7 +72,6 @@ export default defineComponent({
     const transitionToMainPage = () => {
       nowPage.value = 'mainPage';
     };
-    const initialValue = ref<AssignmentDetailSettingsTypes>({});
     const handleToDetailSettings = (
       currentSettings: AssignmentDetailSettingsTypes
     ) => {

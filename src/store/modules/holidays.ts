@@ -1,6 +1,5 @@
 import { Commit } from '../types';
-import { useHolidays } from '@simple-education-dev/components';
-import { Holidays } from '@simple-education-dev/components/types/utils/useHolidays';
+import { useHolidays, Holidays } from './getHolidays';
 
 const state: { holidays: Holidays[] } = {
   holidays: [],

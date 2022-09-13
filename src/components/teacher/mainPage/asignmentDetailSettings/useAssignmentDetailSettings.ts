@@ -17,6 +17,9 @@ export interface CyclePeriod {
   dayOfWeekIndex: number;
 }
 export interface AssignmentDetailSettings {
+  status?: 'draft' | 'active' | 'archived';
+  releaseDate?: Date | null;
+  assignedClasses?: string[];
   title?: string;
   description?: string;
   deadline?: Date;
@@ -33,6 +36,9 @@ export const useAssignmentDetailSettings = (
   const CyclePeriodTransitionRef = ref<HTMLElement | null>(null);
   const initialSettings = ref(initial);
   const settings = reactive({
+    status: initial.status ? initial.status : 'draft',
+    releaseDate: initial.releaseDate ? initial.releaseDate : null,
+    assignedClasses: initial.assignedClasses ? initial.assignedClasses : [],
     title: initial.title ? initial.title : '',
     description: initial.description ? initial.description : '',
     deadline: initial.deadline,
@@ -48,6 +54,32 @@ export const useAssignmentDetailSettings = (
   // 変更検知のため、マウント時に初期値としてコピー
   onMounted(() => {
     initialSettings.value = { ...settings };
+  });
+  const statuses = [
+    { label: '下書き', value: 'draft' },
+    { label: 'アクティブ', value: 'active' },
+    { label: 'アーカイブ', value: 'archived' },
+  ];
+  const classesComboboxField = ref('');
+  const classesComboboxOpen = ref(false);
+  const classes = [
+    '1年A組',
+    '1年B組',
+    '1年C組',
+    '1年D組',
+    '1年E組',
+    '1年F組',
+    '1年G組',
+  ];
+  const isReleseDateSet = ref(false);
+  const releaseDateTemp = ref(new Date());
+  const releaseDateInput = ref('');
+  const releaseDateComputed = computed(() => {
+    if (settings.releaseDate === null) {
+      return '';
+    } else {
+      return format(settings.releaseDate, 'yyyy年MM月dd日 HH:mm');
+    }
   });
   const deadlineDateInput = ref(
     initial.deadline === undefined ? '' : format(initial.deadline, 'MM月dd日')
@@ -106,17 +138,21 @@ export const useAssignmentDetailSettings = (
       isChanged.value = false;
     }
   });
+  const nowSaving = ref(false);
   const destructionModalOpen = ref(false);
   const validationErrors = ref<string[]>([]);
-  const isValidating = ref(false);
+  const isValidatingStudentPreview = ref(false);
+  const isValidatingOnsave = ref(false);
   const studentPreviewErrors = computed(() => {
     const errors = [];
-    if (isValidating.value) {
+    if (isValidatingStudentPreview.value) {
       if (!settings.title) errors.push('タイトルの入力は必須です。');
       if (!settings.isRepeat) {
         if (!deadlineDateInput.value) {
           errors.push('提出日を設定してください。');
         }
+        if (settings.deadline ? isPast(settings.deadline) : false)
+          errors.push('締め切りは未来の時間である必要があります。');
       } else {
         if (settings.cyclePeriod === undefined) {
           errors.push('繰り返す曜日を指定してください。');
@@ -126,15 +162,13 @@ export const useAssignmentDetailSettings = (
         }
       }
       if (!deadlineTime.value) errors.push('締め切り時刻を指定してください。');
-      if (settings.deadline ? isPast(settings.deadline) : false)
-        errors.push('締め切りは未来の時間である必要があります。');
     }
     return errors;
   });
   const onSaveErrors = computed(() => {
     const errors = [];
-    if (studentPreviewErrors.value.length) {
-      errors.push(studentPreviewErrors.value);
+    if (isValidatingOnsave.value) {
+      errors.push(...studentPreviewErrors.value);
       if (!settings.submitMethod) {
         errors.push('提出方法が設定されていません。');
       } else {
@@ -143,12 +177,21 @@ export const useAssignmentDetailSettings = (
             errors.push('その他の提出方法を入力してください。');
         }
       }
+      if (settings.assignedClasses.length < 1)
+        errors.push('最低でも1つのクラスを割り当てる必要があります。');
     }
     return errors;
   });
   watch(studentPreviewErrors, () => {
-    if (isValidating.value) {
+    if (isValidatingStudentPreview.value) {
       validationErrors.value = studentPreviewErrors.value;
+    } else {
+      validationErrors.value = [];
+    }
+  });
+  watch(onSaveErrors, () => {
+    if (isValidatingOnsave.value) {
+      validationErrors.value = onSaveErrors.value;
     } else {
       validationErrors.value = [];
     }
@@ -157,6 +200,16 @@ export const useAssignmentDetailSettings = (
     CyclePeriodTransitionRef,
     initialSettings,
     settings,
+    statuses,
+
+    classesComboboxField,
+    classesComboboxOpen,
+    classes,
+    isReleseDateSet,
+    releaseDateTemp,
+    releaseDateInput,
+    releaseDateComputed,
+
     deadlineDateInput,
     deadlineTimeInput,
     deadlineTime,
@@ -166,8 +219,10 @@ export const useAssignmentDetailSettings = (
     cylclePeriodSammarys,
 
     isChanged,
+    nowSaving,
     destructionModalOpen,
-    isValidating,
+    isValidatingStudentPreview,
+    isValidatingOnsave,
     validationErrors,
     studentPreviewErrors,
     onSaveErrors,

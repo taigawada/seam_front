@@ -1,6 +1,9 @@
 {
+  "allAssignments": "提出物一覧",
   "back": "戻る",
   "selfSubmitCheck": "提出物の完了をチェック",
+  "submittedIn": "に提出しました。",
+  "submitCancel": "取り消し",
   "deadline": "提出期限",
   "today": "今日",
   "tommorow": "明日",

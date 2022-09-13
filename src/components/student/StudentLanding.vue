@@ -1,17 +1,18 @@
 <template>
   <div class="student-previrew">
-    <div v-html="$route.query.descriptionHTML"></div>
+    <MainPage />
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
+import { useStore } from '../../store/useStore';
+import MainPage from './mainPage/MainPage.vue';
 export default defineComponent({
+  components: { MainPage },
   props: {},
-  setup(_, ctx) {
-    const descriptionHTML = ctx.root.$route.query.descriptionHTML;
-    return {
-      descriptionHTML,
-    };
+  setup(_, context) {
+    const store = useStore(context);
+    store.dispatch('getHolidays');
   },
 });
 </script>
@@ -19,6 +20,6 @@ export default defineComponent({
 .student-previrew {
   width: 70%;
   margin: 0 auto;
-  text-align: left;
+  text-align: center;
 }
 </style>

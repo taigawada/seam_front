@@ -1,15 +1,11 @@
 <template>
-  <AssignmentDetailSettingsSkelton
-    v-if="initialValue === null"
-    @previous="handlePreviousPage"
-  />
-  <div v-else class="settings-page-container">
+  <div class="settings-page-container">
     <SimpleSaveBar
       :open="isChanged"
       :saveButton="{
         label: '保存',
-        loading: false,
-        disabled: false,
+        loading: nowSaving,
+        onAction: handleOnSave,
       }"
       :discardButton="{
         label: '変更を破棄',
@@ -126,7 +122,6 @@
               完了
             </SimpleButton>
           </div>
-
           <div v-else-if="cyclePeriodNowSetting === false" key="endEdit">
             <span>提出日</span>
             <div class="cylcle-period-sammary">
@@ -165,9 +160,105 @@
     <div class="general-settings">
       <SimpleStack distribution="right" class="detail-settings-save-buttons">
         <SimpleButton normal @click="handleStudentPagePreview">
+          複製
+        </SimpleButton>
+        <SimpleButton normal @click="handleStudentPagePreview">
           生徒画面プレビュー
         </SimpleButton>
       </SimpleStack>
+      <SimpleCard style="margin-bottom: 20px">
+        <div class="general-settings-card">
+          <div style="text-align: left">
+            <SimpleSelector
+              caption="提出物のステータス"
+              :items="statuses"
+              :value="settings.status"
+              @change:select="handleStatusChange"
+            />
+          </div>
+          <div style="position: relative">
+            <SimpleCombobox
+              caption="割り当てるクラス"
+              placeholder="クラスを選択してください"
+              :fieldValue="classesComboboxField"
+              :items="classes"
+              :selectedItems="settings.assignedClasses"
+              remove
+              multiple
+              search
+              :error="
+                validationErrors.filter(
+                  (error) =>
+                    error === '最低でも1つのクラスを割り当てる必要があります。'
+                )[0]
+              "
+              @fieldChange="handleClassesComboboxFieldChange"
+              @remove="handleClassesComboboxFieldRemove"
+              @change:select="handleClassesComboboxSelectChange"
+              @floatOpen="hnaldeClassesComboboxFloatOpen"
+              @floatClose="hnaldeClassesComboboxFloatClose"
+            />
+            <div
+              v-show="!classesComboboxOpen"
+              class="assign-classes-badges-container"
+            >
+              <TransitionGroup name="classes">
+                <SimpleTag
+                  v-for="classname in settings.assignedClasses"
+                  :key="classname"
+                  class="assign-classes-badges"
+                  @remove="handleClassesDelete(classname)"
+                >
+                  {{ classname }}
+                </SimpleTag>
+              </TransitionGroup>
+            </div>
+            <div
+              style="
+                box-sizing: border-box;
+                height: 1px;
+                border: 0.5px solid rgba(0, 0, 0, 0.3);
+                margin: 10px 0;
+              "
+            ></div>
+            <div style="text-align: left; margin-top: 10px">
+              <p v-show="settings.releaseDate !== null">
+                公開日時が、{{ releaseDateComputed }}(JST)に設定されています。
+              </p>
+              <SimpleStack distribution="left">
+                <SimpleButton plain @click="handleIsReleseDateSet">
+                  公開日時を{{
+                    settings.releaseDate === null ? '' : '再'
+                  }}設定する
+                </SimpleButton>
+                <SimpleButton
+                  v-show="settings.releaseDate !== null"
+                  criticalPlain
+                  textColor="rgba(196, 0, 0, 1)"
+                  @click="handleIsReleseDateReset"
+                >
+                  取り消し
+                </SimpleButton>
+              </SimpleStack>
+              <SimpleDateTimePicker
+                v-show="isReleseDateSet"
+                :initialDatetime="releaseDateTemp"
+                :interval="24"
+                :inputValue="releaseDateInput"
+                @change:datetime="handleReleaseDateChange"
+              />
+              <SimpleStack v-show="isReleseDateSet" distribution="right">
+                <SimpleButton plain @click="handleReleaseDateCancel">
+                  キャンセル
+                </SimpleButton>
+                <SimpleButton plain @click="handleReleaseDateDone">
+                  設定
+                </SimpleButton>
+              </SimpleStack>
+            </div>
+          </div>
+        </div>
+      </SimpleCard>
       <SimpleCard>
         <div class="general-settings-card">
           <SimpleDatePicker
@@ -200,6 +291,11 @@
               caption="提出方法"
               :value="settings.submitMethod"
               :items="submitMethod"
+              :error="
+                validationErrors.filter(
+                  (error) => error === '提出方法が設定されていません。'
+                )[0]
+              "
               @change:select="handleSubmitMethodChange"
             />
           </div>
@@ -208,6 +304,11 @@
             captionHidden
             placeholder="提出方法"
             :value="settings.otherSubmitMethod"
+            :error="
+              validationErrors.filter(
+                (error) => error === 'その他の提出方法を入力してください。'
+              )[0]
+            "
             @change:value="handleOtherSubmitMethodChange"
           />
         </div>
@@ -216,7 +317,7 @@
   </div>
 </template>
 <script lang="ts">
-import router from '../../../../router';
+import router from '@/router';
 import { defineComponent, PropType } from '@vue/composition-api';
 import AssignmentDetailSettingsSkelton from './AssignmentDetailSettingsSkelton.vue';
 import {
@@ -231,9 +332,11 @@ import {
   SimpleCard,
   SimpleInput,
   SimpleCheckbox,
+  SimpleDateTimePicker,
   SimpleTimePicker,
   SimpleDatePicker,
   SimpleSelector,
+  SimpleCombobox,
   SimpleStack,
   WeeklySelector,
   SimpleCalender,
@@ -241,7 +344,8 @@ import {
   SimpleTag,
   SimpleModal,
 } from '@simple-education-dev/components';
-import { useStore } from '../../../../store/useStore';
+import { useStore } from '@/store/useStore';
+import { useTransitionWarning } from '@/components/teacher/useTransitionWarning';
 import TipTapEditor from '@/components/TipTapEditor/TipTapEditor.vue';
 import {
   ArrowLeft,
@@ -267,10 +371,12 @@ export default defineComponent({
     TipTapEditor,
     SimpleCheckbox,
     WeeklySelector,
+    SimpleCombobox,
     SimpleStack,
     SimpleCalender,
     SimpleTimePicker,
     SimpleDatePicker,
+    SimpleDateTimePicker,
     SimpleSelector,
     SimpleIcon,
     SimpleTag,
@@ -280,14 +386,23 @@ export default defineComponent({
   props: {
     initialValue: {
       type: Object as PropType<AssignmentDetailSettings>,
-      default: null,
-      required: false,
+      required: true,
     },
   },
   setup(props, context) {
     const store = useStore(context);
     const {
       settings,
+      statuses,
+
+      classesComboboxField,
+      classesComboboxOpen,
+      classes,
+      isReleseDateSet,
+      releaseDateTemp,
+      releaseDateInput,
+      releaseDateComputed,
+
       deadlineDateInput,
       deadlineTimeInput,
       deadlineTime,
@@ -296,33 +411,72 @@ export default defineComponent({
       isEachWeek,
       cylclePeriodSammarys,
       isChanged,
+      nowSaving,
 
       destructionModalOpen,
       initialSettings,
-      isValidating,
+      isValidatingStudentPreview,
+      isValidatingOnsave,
       studentPreviewErrors,
+      onSaveErrors,
       validationErrors,
     } = useAssignmentDetailSettings(props.initialValue, store);
     const handlePreviousPage = () => {
-      context.emit('previous');
+      useTransitionWarning(store, () => {
+        context.emit('previous');
+      });
     };
     const handleStudentPagePreview = () => {
-      isValidating.value = true;
+      isValidatingStudentPreview.value = true;
       if (studentPreviewErrors.value.length === 0) {
         const previewPage = router.resolve({
           name: 'student-preview',
           query: {
             title: settings.title,
             descriptionHTML: settings.description,
-            cyclePeriod: JSON.stringify(settings.cyclePeriod),
             isRepeat: JSON.stringify(settings.isRepeat),
+            cyclePeriod: JSON.stringify(settings.cyclePeriod),
+            submitOnHoliday: JSON.stringify(settings.submitOnHoliday),
             deadlineDate: settings.deadline?.toString(),
             deadlineTime: deadlineTime.value?.toString(),
           },
         });
         window.open(previewPage.href, '_blank');
-        isValidating.value = false;
+        isValidatingStudentPreview.value = false;
       }
+    };
+    const handleOnSave = async () => {
+      isValidatingOnsave.value = true;
+      isValidatingStudentPreview.value = true;
+      if (onSaveErrors.value.length === 0) {
+        try {
+          nowSaving.value = true;
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+          console.log('save');
+          isValidatingStudentPreview.value = false;
+          isValidatingOnsave.value = false;
+          initialSettings.value = { ...settings };
+          isChanged.value = false;
+        } catch (e) {
+          console.log(e);
+        } finally {
+          nowSaving.value = false;
+          store.dispatch('toCantTransitionFalse');
+        }
+      }
+    };
+    const handleDestructionModalOpen = () => {
+      destructionModalOpen.value = true;
+    };
+    const handleDestructionModalDestroy = () => {
+      destructionModalOpen.value = false;
+    };
+    const handleSettingsdestrunction = () => {
+      Object.assign(settings, { ...initialSettings.value });
+      if (!initialSettings.value.isRepeat) {
+        cyclePeriodNowSetting.value = null;
+      }
+      destructionModalOpen.value = false;
     };
     const handleTitleChange = (newValue: string) => {
       settings.title = newValue;
@@ -372,6 +526,48 @@ export default defineComponent({
     };
 
     // general settings
+    const handleStatusChange = (newValue: 'draft' | 'active' | 'archived') => {
+      settings.status = newValue;
+    };
+    const handleClassesComboboxFieldChange = (newValue: string) => {
+      classesComboboxField.value = newValue;
+    };
+    const handleClassesComboboxFieldRemove = () => {
+      classesComboboxField.value = '';
+    };
+    const handleClassesComboboxSelectChange = (newSelected: string[]) => {
+      settings.assignedClasses = newSelected;
+    };
+    const handleClassesDelete = (classname: string) => {
+      settings.assignedClasses = settings.assignedClasses.filter((el) => {
+        return el !== classname;
+      });
+    };
+    const hnaldeClassesComboboxFloatOpen = () => {
+      classesComboboxOpen.value = true;
+    };
+    const hnaldeClassesComboboxFloatClose = () => {
+      classesComboboxOpen.value = false;
+    };
+    const handleIsReleseDateSet = () => {
+      releaseDateTemp.value = new Date();
+      isReleseDateSet.value = true;
+    };
+    const handleIsReleseDateReset = () => {
+      settings.releaseDate = null;
+      isReleseDateSet.value = false;
+    };
+    const handleReleaseDateChange = (newDate: Date) => {
+      releaseDateTemp.value = newDate;
+      releaseDateInput.value = format(newDate, 'yyyy年MM月dd日 HH時mm分');
+    };
+    const handleReleaseDateDone = () => {
+      settings.releaseDate = releaseDateTemp.value;
+      isReleseDateSet.value = false;
+    };
+    const handleReleaseDateCancel = () => {
+      isReleseDateSet.value = false;
+    };
     const handleDeadlineDateChange = (newDate: Date) => {
       deadlineDateInput.value = format(newDate, 'MM月dd日');
       settings.deadline = set(
@@ -418,19 +614,6 @@ export default defineComponent({
     const handleOtherSubmitMethodChange = (newValue: string) => {
       settings.otherSubmitMethod = newValue;
     };
-    const handleDestructionModalOpen = () => {
-      destructionModalOpen.value = true;
-    };
-    const handleDestructionModalDestroy = () => {
-      destructionModalOpen.value = false;
-    };
-    const handleSettingsdestrunction = () => {
-      Object.assign(settings, { ...initialSettings.value });
-      if (!initialSettings.value.isRepeat) {
-        cyclePeriodNowSetting.value = null;
-      }
-      destructionModalOpen.value = false;
-    };
     const {
       accordionEnter,
       accordionLeave,
@@ -442,9 +625,12 @@ export default defineComponent({
       store,
       handlePreviousPage,
       isChanged,
+      nowSaving,
       settings,
+      validationErrors,
 
       // savebar
+      handleOnSave,
       destructionModalOpen,
       handleDestructionModalOpen,
       handleDestructionModalDestroy,
@@ -474,6 +660,26 @@ export default defineComponent({
       handleStudentPagePreview,
 
       // general settings
+      statuses,
+      handleStatusChange,
+      classes,
+      classesComboboxField,
+      handleClassesComboboxFieldChange,
+      handleClassesComboboxFieldRemove,
+      handleClassesComboboxSelectChange,
+      classesComboboxOpen,
+      hnaldeClassesComboboxFloatOpen,
+      hnaldeClassesComboboxFloatClose,
+      handleClassesDelete,
+      isReleseDateSet,
+      handleIsReleseDateSet,
+      handleIsReleseDateReset,
+      releaseDateTemp,
+      releaseDateInput,
+      releaseDateComputed,
+      handleReleaseDateChange,
+      handleReleaseDateDone,
+      handleReleaseDateCancel,
       deadlineDateInput,
       deadlineTimeInput,
       handleDeadlineDateChange,
@@ -492,7 +698,6 @@ export default defineComponent({
       ArrowLeft,
       ArrowDown,
       ExclamationMark,
-      validationErrors,
     };
   },
 });
@@ -561,7 +766,7 @@ export default defineComponent({
   align-items: center;
 }
 .cylcle-period-sammary-badges-container {
-  width: 90%;
+  width: 85%;
   display: flex;
   flex-wrap: wrap;
 }
@@ -589,6 +794,23 @@ export default defineComponent({
   grid-area: general;
 }
 .general-settings-card {
-  padding: $space-10 $space-10 $space-5 $space-10;
+  padding: $space-4 $space-10 0 $space-10;
+}
+.assign-classes-badges {
+  margin: $space-1;
+}
+.assign-classes-badges-container {
+  padding-top: $space-2;
+  text-align: left;
+}
+.classes-leave-active {
+  position: absolute;
+  transition: all 500ms;
+}
+.classes-leave-to {
+  opacity: 0;
+}
+.classes-move {
+  transition: all 200ms;
 }
 </style>

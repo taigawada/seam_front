@@ -2,73 +2,55 @@ import {
   differenceInWeeks,
   getDay,
   startOfMonth,
-  endOfMonth,
-  endOfWeek,
-  eachWeekOfInterval,
-  eachDayOfInterval,
-  getDate,
-  addMonths,
+  isSameDay,
+  addDays,
+  set,
+  getHours,
+  getMinutes,
+  isPast,
 } from 'date-fns';
+import { Holidays, useHolidays } from '@/store/modules/getHolidays';
 
 export interface CyclePeriod {
   weekIndex: number;
   dayOfWeekIndex: number;
 }
-const nowDateInJST = new Date(
+export const nowDateInJST = new Date(
   Date.now() + (new Date().getTimezoneOffset() + 9 * 60) * 60 * 1000
 );
-const today: CyclePeriod = {
-  weekIndex: differenceInWeeks(nowDateInJST, startOfMonth(nowDateInJST)),
-  dayOfWeekIndex: getDay(nowDateInJST),
-};
-
-const cycleToDate = (cycle: CyclePeriod) => {
-  const addMonth =
-    cycle.weekIndex < today.weekIndex &&
-    cycle.dayOfWeekIndex <= today.dayOfWeekIndex
-      ? 1
-      : 0;
-  // 週初めの配列を取得
-  const weekStartDate = eachWeekOfInterval({
-    start: startOfMonth(addMonths(nowDateInJST, addMonth)),
-    end: endOfMonth(addMonths(nowDateInJST, addMonth)),
-  });
-  // 週初め日付からその週の全ての日付の配列を取得
-  const getWeeksArray = (startDate: Date) =>
-    eachDayOfInterval({
-      start: startDate,
-      end: endOfWeek(startDate),
-    });
-  let weekIndex = cycle.weekIndex;
-  if (
-    7 * (weekIndex + 1) <
-    getDate(getWeeksArray(weekStartDate[weekIndex])[cycle.dayOfWeekIndex])
-  ) {
-    weekIndex++;
-  }
-  return getWeeksArray(weekStartDate[weekIndex])[cycle.dayOfWeekIndex];
-};
-const compareFunction = (
-  a: CyclePeriod,
-  b: CyclePeriod,
-  key: 'dayOfWeekIndex' | 'weekIndex'
+const dateToToCycle = (date: Date) => ({
+  weekIndex: differenceInWeeks(date, startOfMonth(date)),
+  dayOfWeekIndex: getDay(date),
+});
+export const useRemainingDays = async (
+  cyclePeriod: CyclePeriod[],
+  deadlineTime: Date,
+  submitOnHoliday: boolean
 ) => {
-  if (a[key] > b[key]) return 1;
-  if (a[key] < b[key]) return -1;
-  return 0;
-};
-
-export const useRemainingDays = (cyclePeriod: CyclePeriod[]) => {
-  cyclePeriod.push(today);
-  cyclePeriod
-    .sort((a, b) => compareFunction(a, b, 'dayOfWeekIndex'))
-    .sort((a, b) => compareFunction(a, b, 'weekIndex'));
-  let resultIndex =
+  let holidays: Holidays[] = [];
+  if (submitOnHoliday) {
+    holidays = await useHolidays();
+  }
+  const isHoliday = (date: Date) =>
+    holidays.findIndex((holiday) => isSameDay(date, holiday[0])) !== -1;
+  const isInclude = (date: Date) =>
     cyclePeriod.findIndex(
-      (el) =>
-        el.weekIndex === today.weekIndex &&
-        el.dayOfWeekIndex === today.dayOfWeekIndex
-    ) + 1;
-  if (cyclePeriod[resultIndex] === undefined) resultIndex = 0;
-  return cycleToDate(cyclePeriod[resultIndex]);
+      (cycle) =>
+        cycle.weekIndex === dateToToCycle(date).weekIndex &&
+        cycle.dayOfWeekIndex === dateToToCycle(date).dayOfWeekIndex
+    ) !== -1;
+  let currentDate = set(nowDateInJST, {
+    hours: getHours(deadlineTime),
+    minutes: getMinutes(deadlineTime),
+    seconds: 0,
+    milliseconds: 0,
+  });
+  while (
+    !isInclude(currentDate) ||
+    isHoliday(currentDate) ||
+    isPast(currentDate)
+  ) {
+    currentDate = addDays(currentDate, 1);
+  }
+  return currentDate;
 };
