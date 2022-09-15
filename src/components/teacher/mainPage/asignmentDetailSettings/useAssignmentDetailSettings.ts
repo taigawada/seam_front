@@ -7,10 +7,11 @@ import {
   watch,
 } from '@vue/composition-api';
 import { dayOfWeekStr } from '@simple-education-dev/components';
-import { format, isPast } from 'date-fns';
+import { format, getHours, getMinutes, isPast, isValid } from 'date-fns';
 
 import _ from 'lodash';
 import { Store } from 'vuex';
+import { nowDateInJST } from '@/components/student/compositions/useRemainingDays';
 
 export interface CyclePeriod {
   weekIndex: number;
@@ -28,20 +29,22 @@ export interface AssignmentDetailSettings {
   isRepeat?: boolean;
   submitOnHoliday?: boolean;
   cyclePeriod?: Array<CyclePeriod>;
+  delayedSubmission?: boolean;
+  delayedSubmissionDeadline?: Date | null;
 }
 export const useAssignmentDetailSettings = (
   initial: AssignmentDetailSettings = {},
   store: Store<any>
 ) => {
   const CyclePeriodTransitionRef = ref<HTMLElement | null>(null);
-  const initialSettings = ref(initial);
+  const initialSettings = ref<AssignmentDetailSettings>(initial);
   const settings = reactive({
     status: initial.status ? initial.status : 'draft',
-    releaseDate: initial.releaseDate ? initial.releaseDate : null,
+    releaseDate: isValid(initial.releaseDate) ? initial.releaseDate : null,
     assignedClasses: initial.assignedClasses ? initial.assignedClasses : [],
     title: initial.title ? initial.title : '',
     description: initial.description ? initial.description : '',
-    deadline: initial.deadline,
+    deadline: isValid(initial.deadline) ? initial.deadline : undefined,
     submitMethod: initial.submitMethod ? initial.submitMethod : '',
     otherSubmitMethod: initial.otherSubmitMethod
       ? initial.otherSubmitMethod
@@ -50,10 +53,17 @@ export const useAssignmentDetailSettings = (
     submitOnHoliday:
       initial.submitOnHoliday === undefined ? false : initial.submitOnHoliday,
     cyclePeriod: initial.cyclePeriod ? initial.cyclePeriod : [],
+    delayedSubmission:
+      initial.delayedSubmission === undefined
+        ? false
+        : initial.delayedSubmission,
+    delayedSubmissionDeadline: isValid(initial.delayedSubmissionDeadline)
+      ? initial.delayedSubmissionDeadline
+      : null,
   });
   // 変更検知のため、マウント時に初期値としてコピー
   onMounted(() => {
-    initialSettings.value = { ...settings };
+    initialSettings.value = JSON.parse(JSON.stringify({ ...settings }));
   });
   const statuses = [
     { label: '下書き', value: 'draft' },
@@ -62,6 +72,7 @@ export const useAssignmentDetailSettings = (
   ];
   const classesComboboxField = ref('');
   const classesComboboxOpen = ref(false);
+  /** クラス一覧をどうやって持ってくるか */
   const classes = [
     '1年A組',
     '1年B組',
@@ -75,10 +86,10 @@ export const useAssignmentDetailSettings = (
   const releaseDateTemp = ref(new Date());
   const releaseDateInput = ref('');
   const releaseDateComputed = computed(() => {
-    if (settings.releaseDate === null) {
-      return '';
-    } else {
+    if (settings.releaseDate) {
       return format(settings.releaseDate, 'yyyy年MM月dd日 HH:mm');
+    } else {
+      return '';
     }
   });
   const deadlineDateInput = ref(
@@ -87,7 +98,9 @@ export const useAssignmentDetailSettings = (
   const deadlineTimeInput = ref(
     initial.deadline === undefined ? '' : format(initial.deadline, 'HH:mm')
   );
-  const deadlineTime = ref<Date | null>(null);
+  const deadlineTime = ref<Date | null>(
+    initial.deadline ? initial.deadline : null
+  );
   const cyclePeriodPreview = ref(false);
   const cyclePeriodNowSetting = ref<boolean | null>(null);
   const isEachWeek = ref(true);
@@ -122,6 +135,14 @@ export const useAssignmentDetailSettings = (
     if (settings.isRepeat) {
       deadlineDateInput.value = '';
     }
+  });
+  const delayedSubmissionDeadlineTime = reactive({
+    meridiem: getHours(nowDateInJST) < 12 ? '午前' : '午後',
+    hours:
+      getHours(nowDateInJST) < 12
+        ? getHours(nowDateInJST)
+        : getHours(nowDateInJST) % 12,
+    minutes: getMinutes(nowDateInJST),
   });
   const isChanged = ref(false);
   watch(settings, () => {
@@ -217,6 +238,8 @@ export const useAssignmentDetailSettings = (
     cyclePeriodNowSetting,
     isEachWeek,
     cylclePeriodSammarys,
+
+    delayedSubmissionDeadlineTime,
 
     isChanged,
     nowSaving,

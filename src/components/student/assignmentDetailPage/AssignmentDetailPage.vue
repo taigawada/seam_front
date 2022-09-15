@@ -1,7 +1,7 @@
 <template>
   <div class="assignment-detail-container">
     <div class="assignment-detail-header">
-      <div class="assignment-detail-main-header">
+      <div>
         <SimpleButton
           normal
           :icon="ArrowLeft"
@@ -10,9 +10,8 @@
         >
           {{ $t('back') }}
         </SimpleButton>
-        <span class="assignment-detail-title">{{ assignment.title }}</span>
       </div>
-      <div class="assignment-detail-sub-header">
+      <div class="assignment-detail-submit-button">
         <SubmitButton
           :isSubmitted="isSubmitted"
           :onSubmit="handleOnSubmit"
@@ -20,16 +19,30 @@
           @success="handleSubmitSuccess"
           @failed="handleSubmitFailed"
         />
-        <span style="color: rgba(53, 146, 185, 1)">
+        <span class="assignment-detail-submit-date">
           {{ isSubmitted ? submittedDate : '' }}
         </span>
       </div>
     </div>
+    <div class="assignment-detail-title-container">
+      <div class="assignment-detail-icon">ICON</div>
+      <div class="assignment-detail-title">
+        {{ assignment.title }}
+      </div>
+    </div>
+    <p class="assignment-detail-deadline">
+      {{ $t('deadline') }}:
+      {{ deadline }}
+    </p>
     <div class="assignment-detail-content">
-      <p>
-        {{ $t('deadline') }}:
-        {{ deadline }}
-      </p>
+      <div
+        style="
+          box-sizing: border-box;
+          height: 1px;
+          border: 0.5px solid rgba(0, 0, 0, 0.3);
+          margin: 10px 0;
+        "
+      ></div>
       <div
         class="assignment-detail-description"
         v-html="$route.query.descriptionHTML"
@@ -52,6 +65,25 @@ export default defineComponent({
   components: {
     SimpleButton,
     SubmitButton,
+  },
+  props: {
+    title: {
+      type: String,
+      required: false,
+    },
+    deadlineDate: {
+      type: Date,
+      required: false,
+    },
+    deadlineTime: {
+      type: Date,
+      required: false,
+    },
+    descriptionHTML: {
+      type: String,
+      default: '<p></p>',
+      required: false,
+    },
   },
   setup(_) {
     const { t } = useI18n();
@@ -110,19 +142,33 @@ export default defineComponent({
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  height: 70px;
+  min-height: 71px;
 }
-.assignment-detail-main-header {
-  display: flex;
-  align-items: center;
-}
-.assignment-detail-sub-header {
+.assignment-detail-submit-button {
   text-align: end;
   display: block;
 }
+.assignment-detail-title-container {
+  width: 80%;
+  margin: 0 auto;
+  display: flex;
+}
+.assignment-detail-deadline {
+  width: 80%;
+  margin: 0 auto;
+  text-align: left;
+}
+.assignment-detail-icon {
+  width: 40px;
+  height: 40px;
+}
 .assignment-detail-title {
-  margin-left: $space-5;
   font-size: $font-size-10;
+  text-align: left;
+}
+.assignment-detail-submit-date {
+  color: rgba(53, 146, 185, 1);
+  font-size: $font-size-4;
 }
 .assignment-detail-content {
   width: 80%;
@@ -132,7 +178,7 @@ export default defineComponent({
 .assignment-detail-description {
   ::v-deep h1 {
     font-size: $font-size-8;
-    font-weight: 600;
+    font-weight: 530;
   }
   ::v-deep h3 {
     margin: $space-2 0;

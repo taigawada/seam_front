@@ -23,13 +23,17 @@
       :selected="tabSelected"
       @change="handleTabSelect"
     />
-    <components :is="currentPage" />
+    <router-link to="/"></router-link>
+    <router-link to="/home"></router-link>
+    <router-link to="/settings"></router-link>
+    <router-view />
   </div>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import { SimpleTabs, SimpleModal } from '@simple-education-dev/components';
 import { useStore } from '../../store/useStore';
+import router from '@/router';
 import { useTransitionWarning } from './useTransitionWarning';
 import MainPage from './mainPage/MainPage.vue';
 import MainPageSkelton from './mainPage/MainPageSkelton.vue';
@@ -47,23 +51,24 @@ export default defineComponent({
     const tabs = [
       {
         label: '提出物管理',
-        id: 'MainPage',
+        id: '/home',
       },
       {
         label: '設定',
-        id: 'SettingsPage',
+        id: '/settings',
       },
     ];
-    const currentPage = ref('MainPageSkelton');
     const tabSelected = ref(0);
     (async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      currentPage.value = 'MainPage';
+      if (router.currentRoute.path.match(/^\/$|^\/home$/) !== null) {
+        router.push({ path: '/home' });
+      }
     })();
     const handleTabSelect = async (select: number) => {
       useTransitionWarning(store, () => {
         tabSelected.value = select;
-        currentPage.value = tabs[select].id;
+        router.push({ path: tabs[select].id });
       });
     };
     const pageTransitionClick = () => {
@@ -83,7 +88,6 @@ export default defineComponent({
       tabs,
       tabSelected,
       handleTabSelect,
-      currentPage,
     };
   },
 });

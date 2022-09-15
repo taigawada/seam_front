@@ -17,8 +17,8 @@
       title="全ての変更を破棄"
       :mainAction="{
         text: '破棄',
-        isError: true,
-        onAction: handleSettingsdestrunction,
+        isCritical: true,
+        onAction: handleSettingsDestrunction,
       }"
       :subAction="{
         text: 'キャンセル',
@@ -154,7 +154,15 @@
             </p>
           </div>
         </Transition>
-        <div style="height: 800px"></div>
+        <div class="partition-bar" style="margin: 20px 0"></div>
+        <SimpleCheckbox
+          :value="settings.delayedSubmission"
+          label="遅れての提出を許可"
+          @change="handleDelayedSubmittionChange"
+        />
+        <div class="delayed-submittion-deadline">
+          <SimpleDateTimePicker caption="最終提出" />
+        </div>
       </div>
     </div>
     <div class="general-settings">
@@ -214,14 +222,10 @@
               </TransitionGroup>
             </div>
             <div
-              style="
-                box-sizing: border-box;
-                height: 1px;
-                border: 0.5px solid rgba(0, 0, 0, 0.3);
-                margin: 10px 0;
-              "
-            ></div>
-            <div style="text-align: left; margin-top: 10px">
+              v-show="settings.status === 'draft'"
+              style="text-align: left; margin-top: 10px"
+            >
+              <div class="partition-bar"></div>
               <p v-show="settings.releaseDate !== null">
                 公開日時が、{{ releaseDateComputed }}(JST)に設定されています。
               </p>
@@ -317,8 +321,8 @@
   </div>
 </template>
 <script lang="ts">
-import router from '@/router';
 import { defineComponent, PropType } from '@vue/composition-api';
+import router from '@/router';
 import AssignmentDetailSettingsSkelton from './AssignmentDetailSettingsSkelton.vue';
 import {
   useAssignmentDetailSettings,
@@ -386,7 +390,7 @@ export default defineComponent({
   props: {
     initialValue: {
       type: Object as PropType<AssignmentDetailSettings>,
-      required: true,
+      required: false,
     },
   },
   setup(props, context) {
@@ -410,6 +414,9 @@ export default defineComponent({
       cyclePeriodNowSetting,
       isEachWeek,
       cylclePeriodSammarys,
+
+      delayedSubmissionDeadlineTime,
+
       isChanged,
       nowSaving,
 
@@ -423,7 +430,7 @@ export default defineComponent({
     } = useAssignmentDetailSettings(props.initialValue, store);
     const handlePreviousPage = () => {
       useTransitionWarning(store, () => {
-        context.emit('previous');
+        router.push('/home');
       });
     };
     const handleStudentPagePreview = () => {
@@ -455,7 +462,7 @@ export default defineComponent({
           console.log('save');
           isValidatingStudentPreview.value = false;
           isValidatingOnsave.value = false;
-          initialSettings.value = { ...settings };
+          initialSettings.value = JSON.parse(JSON.stringify({ ...settings }));
           isChanged.value = false;
         } catch (e) {
           console.log(e);
@@ -471,11 +478,17 @@ export default defineComponent({
     const handleDestructionModalDestroy = () => {
       destructionModalOpen.value = false;
     };
-    const handleSettingsdestrunction = () => {
+    const handleSettingsDestrunction = () => {
       Object.assign(settings, { ...initialSettings.value });
       if (!initialSettings.value.isRepeat) {
         cyclePeriodNowSetting.value = null;
       }
+      if (!initialSettings.value.deadline) {
+        deadlineDateInput.value = '';
+        deadlineTimeInput.value = '';
+      }
+      isValidatingStudentPreview.value = false;
+      isValidatingOnsave.value = false;
       destructionModalOpen.value = false;
     };
     const handleTitleChange = (newValue: string) => {
@@ -523,6 +536,9 @@ export default defineComponent({
     };
     const handleCyclePeriodEdit = () => {
       cyclePeriodNowSetting.value = true;
+    };
+    const handleDelayedSubmittionChange = (newBoolean: boolean) => {
+      settings.delayedSubmission = newBoolean;
     };
 
     // general settings
@@ -634,7 +650,7 @@ export default defineComponent({
       destructionModalOpen,
       handleDestructionModalOpen,
       handleDestructionModalDestroy,
-      handleSettingsdestrunction,
+      handleSettingsDestrunction,
 
       // cycle period settings
       cyclePeriodPreview,
@@ -651,10 +667,13 @@ export default defineComponent({
       handleCyclePeriodSettingDone,
       handleCyclePeriodDelete,
       handleCyclePeriodEdit,
+      handleDelayedSubmittionChange,
 
       // detail settings
       handleTitleChange,
       handleDescriptionChange,
+
+      delayedSubmissionDeadlineTime,
 
       // actions
       handleStudentPagePreview,
@@ -769,6 +788,7 @@ export default defineComponent({
   width: 85%;
   display: flex;
   flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .cylcle-period-sammary-badges {
   margin: $space-2;
@@ -789,6 +809,10 @@ export default defineComponent({
   transition: all 200ms;
 }
 
+.delayed-submittion-deadline {
+  width: 50%;
+}
+
 .general-settings {
   padding-top: $space-5;
   grid-area: general;
@@ -802,6 +826,9 @@ export default defineComponent({
 .assign-classes-badges-container {
   padding-top: $space-2;
   text-align: left;
+}
+.partition-bar {
+  @extend %partition-bar;
 }
 .classes-leave-active {
   position: absolute;

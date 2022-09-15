@@ -12,6 +12,12 @@ Vue.config.productionTip = false;
 
 import '@simple-education-dev/components/style';
 
+import { worker } from './apiMocks/browser';
+
+if (process.env.NODE_ENV === 'development') {
+  worker.start();
+}
+
 new Vue({
   router,
   store,

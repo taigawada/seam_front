@@ -1,5 +1,5 @@
 <template>
-  <div v-if="nowPage === 'mainPage'" class="main-page-container">
+  <div class="main-page-container">
     <div class="landing-page-content">
       <NotificationCards :assignments="assignments" />
       <div v-if="allAssignments.length !== 0">
@@ -17,18 +17,11 @@
       <QuickAddAssignment @toDetailSettings="handleToDetailSettings" />
     </div>
   </div>
-  <div v-else-if="nowPage === 'assignmentDetailSettings'">
-    <AssignmentDetailSettings
-      v-if="initialValue !== null"
-      :initialValue="initialValue"
-      @previous="transitionToMainPage"
-    />
-    <AssignmentDetailSettingsSkelton v-else />
-  </div>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
 import { useStore } from '../../../store/useStore';
+import router from '@/router';
 import { SimpleStack, SimpleButton } from '@simple-education-dev/components';
 
 import { AssignmentDetailSettings as AssignmentDetailSettingsTypes } from './asignmentDetailSettings/useAssignmentDetailSettings';
@@ -61,27 +54,30 @@ export default defineComponent({
   },
   setup(_, context) {
     const store = useStore(context);
-    const nowPage = ref<'mainPage' | 'assignmentDetailSettings'>('mainPage');
     const initialValue = ref<AssignmentDetailSettingsTypes | null>({});
     store.dispatch('getHolidays');
     const allAssignments: [] = [];
     const assignments = ['宿題1', '宿題2', '宿題3', '宿題4'];
     const transitionToAssignmentDetailSettingsPage = () => {
-      nowPage.value = 'assignmentDetailSettings';
+      router.push({
+        path: '/assignments/new',
+      });
     };
     const transitionToMainPage = () => {
-      nowPage.value = 'mainPage';
+      // nowPage.value = 'mainPage';
     };
     const handleToDetailSettings = (
       currentSettings: AssignmentDetailSettingsTypes
     ) => {
-      nowPage.value = 'assignmentDetailSettings';
       initialValue.value = currentSettings;
+      router.push({
+        name: 'newAssignmentDetailSettings',
+        params: { initialValue: initialValue.value as string },
+      });
     };
     return {
       allAssignments,
       assignments,
-      nowPage,
       transitionToAssignmentDetailSettingsPage,
       transitionToMainPage,
       initialValue,
@@ -93,7 +89,6 @@ export default defineComponent({
 <style scoped lang="scss">
 @use '@simple-education-dev/tokens/styles' as *;
 .main-page-container {
-  height: 100vh;
   margin: 0 $space-6 $space-6 $space-6;
   display: grid;
   grid-template-rows: 80px 1fr;
