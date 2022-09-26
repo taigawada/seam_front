@@ -95,22 +95,22 @@ export default defineComponent({
       }
     };
     const handleOnSubmit = async () => {
-      await new Promise((reresolve) => setTimeout(reresolve, 2000));
-      return '提出';
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return JSON.stringify(nowDateInJST);
     };
     const handleOnSubmitCancel = async () => {
-      await new Promise((reresolve) => setTimeout(reresolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       return '取り消し';
     };
-    const handleSubmitSuccess = (result: string) => {
+    const handleSubmitSuccess = (time: string) => {
       isSubmitted.value = !isSubmitted.value;
+      const submittedAt = new Date(JSON.parse(time));
       submittedDate.value = format(
-        nowDateInJST,
-        `MM${t('month')}dd${t('date')}(${t(format(nowDateInJST, 'eee'))}${t(
+        submittedAt,
+        `MM${t('month')}dd${t('date')}(${t(format(submittedAt, 'eee'))}${t(
           'day'
         )})HH${t('hours')}mm${t('minutes')}${t('submittedIn')}`
       );
-      console.log(result);
     };
     const handleSubmitFailed = (error: string) => {
       isSubmitted.value = false;
@@ -132,7 +132,7 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
+@use '@simple-education-dev/components/globalStyles' as *;
 .assignment-detail-container {
   margin: $space-16 $space-6 $space-6 $space-6;
 }

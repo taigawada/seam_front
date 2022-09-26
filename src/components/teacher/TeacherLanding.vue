@@ -20,29 +20,28 @@
     </SimpleModal>
     <SimpleTabs
       :tabs="tabs"
-      :selected="tabSelected"
+      :selected="$store.getters.currentTeacherTabIndex"
       @change="handleTabSelect"
     />
     <router-link to="/"></router-link>
-    <router-link to="/home"></router-link>
+    <router-link to="/assignments"></router-link>
+    <router-link to="/assignments/detail"></router-link>
     <router-link to="/settings"></router-link>
     <router-view />
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref } from '@vue/composition-api';
+import { defineComponent } from '@vue/composition-api';
 import { SimpleTabs, SimpleModal } from '@simple-education-dev/components';
 import { useStore } from '../../store/useStore';
 import router from '@/router';
-import { useTransitionWarning } from './useTransitionWarning';
+import { useTransitionWarning } from './compositions/useTransitionWarning';
 import MainPage from './mainPage/MainPage.vue';
-import MainPageSkelton from './mainPage/MainPageSkelton.vue';
 import SettingsPage from './settingsPage/SettingsPage.vue';
 export default defineComponent({
   components: {
     SimpleTabs,
     MainPage,
-    MainPageSkelton,
     SettingsPage,
     SimpleModal,
   },
@@ -51,24 +50,20 @@ export default defineComponent({
     const tabs = [
       {
         label: '提出物管理',
-        id: '/home',
+        id: 'teacherLanding',
       },
       {
         label: '設定',
-        id: '/settings',
+        id: 'userSettings',
       },
     ];
-    const tabSelected = ref(0);
     (async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      if (router.currentRoute.path.match(/^\/$|^\/home$/) !== null) {
-        router.push({ path: '/home' });
-      }
+      store.dispatch('getHolidays');
     })();
     const handleTabSelect = async (select: number) => {
-      useTransitionWarning(store, () => {
-        tabSelected.value = select;
-        router.push({ path: tabs[select].id });
+      useTransitionWarning(store, async () => {
+        await store.dispatch('teacherTabSelect', select);
+        router.push({ name: tabs[select].id });
       });
     };
     const pageTransitionClick = () => {
@@ -86,7 +81,6 @@ export default defineComponent({
       pageTransitionCancel,
       handleTransitionWaningModalDestroy,
       tabs,
-      tabSelected,
       handleTabSelect,
     };
   },

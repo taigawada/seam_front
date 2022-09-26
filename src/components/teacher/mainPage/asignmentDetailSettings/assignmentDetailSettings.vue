@@ -59,11 +59,7 @@
         <SimpleInput
           caption="提出物タイトル"
           :value="settings.title ? settings.title : ''"
-          :error="
-            validationErrors.filter(
-              (error) => error === 'タイトルの入力は必須です。'
-            )[0]
-          "
+          :error="titleErrors"
           @change:value="handleTitleChange"
         />
         <TipTapEditor
@@ -108,7 +104,7 @@
             <div class="detail-settings-preview-calender">
               <SimpleCalender
                 :highLights="settings.cyclePeriod"
-                :holidays="store.getters.holidays"
+                :holidays="stringToDate(store.getters.holidays)"
                 :hiddenHighLightInHolidays="settings.submitOnHoliday"
               />
             </div>
@@ -160,9 +156,6 @@
           label="遅れての提出を許可"
           @change="handleDelayedSubmittionChange"
         />
-        <div class="delayed-submittion-deadline">
-          <SimpleDateTimePicker caption="最終提出" />
-        </div>
       </div>
     </div>
     <div class="general-settings">
@@ -171,7 +164,7 @@
           複製
         </SimpleButton>
         <SimpleButton normal @click="handleStudentPagePreview">
-          生徒画面プレビュー
+          プレビュー
         </SimpleButton>
       </SimpleStack>
       <SimpleCard style="margin-bottom: 20px">
@@ -215,13 +208,14 @@
                   v-for="classname in settings.assignedClasses"
                   :key="classname"
                   class="assign-classes-badges"
+                  dark
                   @remove="handleClassesDelete(classname)"
                 >
                   {{ classname }}
                 </SimpleTag>
               </TransitionGroup>
             </div>
-            <div
+            <!-- <div
               v-show="settings.status === 'draft'"
               style="text-align: left; margin-top: 10px"
             >
@@ -259,7 +253,7 @@
                   設定
                 </SimpleButton>
               </SimpleStack>
-            </div>
+            </div> -->
           </div>
         </div>
       </SimpleCard>
@@ -278,7 +272,7 @@
             @change:date="handleDeadlineDateChange"
           />
           <SimpleTimePicker
-            caption="締め切り"
+            caption="締め切り時刻"
             :initialTime="settings.deadline"
             :inputValue="deadlineTimeInput"
             :error="
@@ -293,8 +287,8 @@
           <div style="text-align: left; margin: 0.25rem 0">
             <SimpleSelector
               caption="提出方法"
-              :value="settings.submitMethod"
-              :items="submitMethod"
+              :value="settings.submissionMethod"
+              :items="submissionMethods.map((el) => ({ value: el, label: el }))"
               :error="
                 validationErrors.filter(
                   (error) => error === '提出方法が設定されていません。'
@@ -304,10 +298,10 @@
             />
           </div>
           <SimpleInput
-            v-show="settings.submitMethod === 'other'"
+            v-show="settings.submissionMethod === 'other'"
             captionHidden
             placeholder="提出方法"
-            :value="settings.otherSubmitMethod"
+            :value="settings.otherSubmissionMethod"
             :error="
               validationErrors.filter(
                 (error) => error === 'その他の提出方法を入力してください。'
@@ -321,7 +315,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType } from '@vue/composition-api';
+import { computed, defineComponent, PropType } from '@vue/composition-api';
 import router from '@/router';
 import AssignmentDetailSettingsSkelton from './AssignmentDetailSettingsSkelton.vue';
 import {
@@ -349,7 +343,7 @@ import {
   SimpleModal,
 } from '@simple-education-dev/components';
 import { useStore } from '@/store/useStore';
-import { useTransitionWarning } from '@/components/teacher/useTransitionWarning';
+import { useTransitionWarning } from '@/components/teacher/compositions/useTransitionWarning';
 import TipTapEditor from '@/components/TipTapEditor/TipTapEditor.vue';
 import {
   ArrowLeft,
@@ -365,6 +359,7 @@ import {
   getYear,
   set,
 } from 'date-fns';
+import { SeamApiTeacher } from '@/api/endpoints';
 
 export default defineComponent({
   components: {
@@ -390,11 +385,19 @@ export default defineComponent({
   props: {
     initialValue: {
       type: Object as PropType<AssignmentDetailSettings>,
-      required: false,
+      required: true,
+    },
+    submissionMethods: {
+      type: Array as PropType<string[]>,
+      required: true,
     },
   },
   setup(props, context) {
     const store = useStore(context);
+    const stringToDate = (holidays: [string, string][]) => {
+      return holidays.map((holiday) => [new Date(holiday[0]), holiday[1]]);
+    };
+
     const {
       settings,
       statuses,
@@ -415,8 +418,6 @@ export default defineComponent({
       isEachWeek,
       cylclePeriodSammarys,
 
-      delayedSubmissionDeadlineTime,
-
       isChanged,
       nowSaving,
 
@@ -427,10 +428,15 @@ export default defineComponent({
       studentPreviewErrors,
       onSaveErrors,
       validationErrors,
-    } = useAssignmentDetailSettings(props.initialValue, store);
+      titleLengthError,
+    } = useAssignmentDetailSettings(
+      props.initialValue,
+      props.submissionMethods[0],
+      store
+    );
     const handlePreviousPage = () => {
       useTransitionWarning(store, () => {
-        router.push('/home');
+        router.push('/');
       });
     };
     const handleStudentPagePreview = () => {
@@ -458,13 +464,24 @@ export default defineComponent({
       if (onSaveErrors.value.length === 0) {
         try {
           nowSaving.value = true;
-          await new Promise((resolve) => setTimeout(resolve, 1200));
-          console.log('save');
-          isValidatingStudentPreview.value = false;
-          isValidatingOnsave.value = false;
-          initialSettings.value = JSON.parse(JSON.stringify({ ...settings }));
-          isChanged.value = false;
+          if (router.currentRoute.name === 'newAssignmentDetailSettings') {
+            const assignmentId = await SeamApiTeacher.createAssignment(
+              JSON.stringify(settings)
+            );
+            console.log(assignmentId.data);
+            router.push({
+              name: 'assignmentDetailSettings',
+              params: { assignmentId: String(assignmentId.data) },
+            });
+            location.reload();
+          } else {
+            isValidatingStudentPreview.value = false;
+            isValidatingOnsave.value = false;
+            initialSettings.value = JSON.parse(JSON.stringify({ ...settings }));
+            isChanged.value = false;
+          }
         } catch (e) {
+          /* error handling */
           console.log(e);
         } finally {
           nowSaving.value = false;
@@ -494,6 +511,14 @@ export default defineComponent({
     const handleTitleChange = (newValue: string) => {
       settings.title = newValue;
     };
+    const titleErrors = computed(() => {
+      const emptyError = validationErrors.value.filter((error) => {
+        error === 'タイトルの入力は必須です。';
+      })[0];
+      if (emptyError) return emptyError;
+      else if (titleLengthError.value) return titleLengthError.value;
+      else return undefined;
+    });
     const handleDescriptionChange = (newValue: string) => {
       settings.description = newValue;
     };
@@ -610,25 +635,12 @@ export default defineComponent({
         }
       );
     };
-    const submitMethod = [
-      {
-        label: '朝のHRまでに回収',
-        value: '朝のHRまでに回収',
-      },
-      {
-        label: '帰りのHRで回収',
-        value: '帰りのHRで回収',
-      },
-      {
-        label: 'その他',
-        value: 'other',
-      },
-    ];
     const handleSubmitMethodChange = (newValue: string) => {
-      settings.submitMethod = newValue;
+      console.log(newValue);
+      settings.submissionMethod = newValue;
     };
     const handleOtherSubmitMethodChange = (newValue: string) => {
-      settings.otherSubmitMethod = newValue;
+      settings.otherSubmissionMethod = newValue;
     };
     const {
       accordionEnter,
@@ -644,6 +656,8 @@ export default defineComponent({
       nowSaving,
       settings,
       validationErrors,
+      stringToDate,
+      titleLengthError,
 
       // savebar
       handleOnSave,
@@ -671,9 +685,8 @@ export default defineComponent({
 
       // detail settings
       handleTitleChange,
+      titleErrors,
       handleDescriptionChange,
-
-      delayedSubmissionDeadlineTime,
 
       // actions
       handleStudentPagePreview,
@@ -703,7 +716,6 @@ export default defineComponent({
       deadlineTimeInput,
       handleDeadlineDateChange,
       handleDeadlineTimeChange,
-      submitMethod,
       handleSubmitMethodChange,
       handleOtherSubmitMethodChange,
 
@@ -722,15 +734,15 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
+@use '@simple-education-dev/components/globalStyles' as *;
 .settings-page-container {
   margin: $space-6;
   display: grid;
   grid-template-rows: 100vh;
   grid-template-columns: 1fr 380px;
   // prettier-ignore
-  grid-template-areas:
-    "detail  general"
+  grid-template-areas: "detail general"
+  // "detail  "
 }
 .detail-settings-save-buttons {
   margin-right: $space-4;

@@ -38,7 +38,7 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
+@use '@simple-education-dev/components/globalStyles' as *;
 .student-main-page {
   margin: $space-10;
 }

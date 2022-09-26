@@ -167,7 +167,7 @@ export default defineComponent({
 });
 </script>
 <style lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
+@use '@simple-education-dev/components/globalStyles' as *;
 .tiptap-editor-container {
   position: relative;
   text-align: left;

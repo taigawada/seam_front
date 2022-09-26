@@ -9,7 +9,7 @@ export const useHolidays = async (
   yearRange: number = 1
 ): Promise<Holidays[]> => {
   const result = await axios
-    .get('src/assets/syukujitsu.csv', { responseType: 'arraybuffer' })
+    .get('/src/public/syukujitsu.csv', { responseType: 'arraybuffer' })
     .catch((e) => {
       throw e.message;
     });

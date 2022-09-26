@@ -24,8 +24,8 @@ export interface AssignmentDetailSettings {
   title?: string;
   description?: string;
   deadline?: Date;
-  submitMethod?: string;
-  otherSubmitMethod?: string;
+  submissionMethod?: string;
+  otherSubmissionMethod?: string;
   isRepeat?: boolean;
   submitOnHoliday?: boolean;
   cyclePeriod?: Array<CyclePeriod>;
@@ -34,6 +34,7 @@ export interface AssignmentDetailSettings {
 }
 export const useAssignmentDetailSettings = (
   initial: AssignmentDetailSettings = {},
+  initialSubmissionMethod: string,
   store: Store<any>
 ) => {
   const CyclePeriodTransitionRef = ref<HTMLElement | null>(null);
@@ -45,9 +46,9 @@ export const useAssignmentDetailSettings = (
     title: initial.title ? initial.title : '',
     description: initial.description ? initial.description : '',
     deadline: isValid(initial.deadline) ? initial.deadline : undefined,
-    submitMethod: initial.submitMethod ? initial.submitMethod : '',
-    otherSubmitMethod: initial.otherSubmitMethod
-      ? initial.otherSubmitMethod
+    submissionMethod: initialSubmissionMethod,
+    otherSubmissionMethod: initial.otherSubmissionMethod
+      ? initial.otherSubmissionMethod
       : '',
     isRepeat: initial.isRepeat === undefined ? false : initial.isRepeat,
     submitOnHoliday:
@@ -63,16 +64,14 @@ export const useAssignmentDetailSettings = (
   });
   // 変更検知のため、マウント時に初期値としてコピー
   onMounted(() => {
-    initialSettings.value = JSON.parse(JSON.stringify({ ...settings }));
+    initialSettings.value = { ...settings };
   });
   const statuses = [
     { label: '下書き', value: 'draft' },
     { label: 'アクティブ', value: 'active' },
-    { label: 'アーカイブ', value: 'archived' },
   ];
   const classesComboboxField = ref('');
   const classesComboboxOpen = ref(false);
-  /** クラス一覧をどうやって持ってくるか */
   const classes = [
     '1年A組',
     '1年B組',
@@ -186,15 +185,19 @@ export const useAssignmentDetailSettings = (
     }
     return errors;
   });
+  const titleLengthError = computed(() => {
+    if (settings.title.length > 50)
+      return 'タイトルは50文字以内である必要があります。';
+  });
   const onSaveErrors = computed(() => {
     const errors = [];
     if (isValidatingOnsave.value) {
       errors.push(...studentPreviewErrors.value);
-      if (!settings.submitMethod) {
+      if (!settings.submissionMethod) {
         errors.push('提出方法が設定されていません。');
       } else {
-        if (settings.submitMethod === 'other') {
-          if (!settings.otherSubmitMethod)
+        if (settings.submissionMethod === 'other') {
+          if (!settings.otherSubmissionMethod)
             errors.push('その他の提出方法を入力してください。');
         }
       }
@@ -249,5 +252,6 @@ export const useAssignmentDetailSettings = (
     validationErrors,
     studentPreviewErrors,
     onSaveErrors,
+    titleLengthError,
   };
 };

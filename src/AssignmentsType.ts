@@ -14,8 +14,8 @@ export interface Assignment {
   title: string;
   description: string;
   deadline: Date;
-  submitMethod: string;
-  otherSubmitMethod?: string;
+  submissionMethod: string;
+  otherSubmissionMethod?: string;
   isRepeat: boolean;
   submitOnHoliday: boolean;
   cyclePeriod: Array<CyclePeriod> | [];

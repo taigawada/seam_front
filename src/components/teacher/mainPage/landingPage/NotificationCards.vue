@@ -9,7 +9,7 @@
         ref="notificationCardsContainer"
         class="notification-cards-container"
         :style="transformWidth"
-        @mousedown="handleDragStart"
+        @pointerdown="handleDragStart"
       >
         <SimpleCard
           v-for="(i, index) in numberOfCards"
@@ -82,11 +82,11 @@ export default defineComponent({
         timer.stop();
         if (mousePositionXDragStart.value !== null) {
           const amountX = x.value - mousePositionXDragStart.value;
-          if (amountX > cardsContainerRect.width.value / 6) {
+          if (amountX > cardsContainerRect.width.value / 4) {
             mousePositionXDragStart.value = null;
             amountMousePositionX.value = 0;
             handlePreviousPage();
-          } else if (amountX < -cardsContainerRect.width.value / 6) {
+          } else if (amountX < -cardsContainerRect.width.value / 4) {
             mousePositionXDragStart.value = null;
             amountMousePositionX.value = 0;
             handleNextPage();
@@ -126,7 +126,7 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
+@use '@simple-education-dev/components/globalStyles' as *;
 .notification-cards-wrapper {
   margin-left: auto;
   margin-right: auto;

@@ -2,16 +2,29 @@
   <div class="main-page-container">
     <div class="landing-page-content">
       <NotificationCards :assignments="assignments" />
-      <div v-if="allAssignments.length !== 0">
-        <MainPageEmptyState />
+      <div v-if="(isLoading ? loadingResource : assignments).length === 0">
+        <img src="/src/public/emptyState1.png" class="empty-state-img" />
+        <h2 class="empty-state-header">追加済みの課題がありません</h2>
+        <p>課題を追加すると、ここに表示されます。</p>
       </div>
       <div v-else>
-        <AssignmentResourcelist />
-        <div class="assignments-resource-list">resource-list</div>
+        <div class="assignments-resource-list">
+          <AssignmentResourcelist
+            :loading="isLoading"
+            :assignments="isLoading ? loadingResource : assignments"
+            @delete="handleAssignmentDelete"
+          />
+        </div>
       </div>
     </div>
     <div class="main-page-buttons">
-      <ActionsButton :onClick="transitionToAssignmentDetailSettingsPage" />
+      <SimpleButton
+        primary
+        fill
+        @click="transitionToAssignmentDetailSettingsPage"
+      >
+        提出物を追加
+      </SimpleButton>
     </div>
     <div class="quick-assignment-add-card">
       <QuickAddAssignment @toDetailSettings="handleToDetailSettings" />
@@ -20,7 +33,6 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref } from '@vue/composition-api';
-import { useStore } from '../../../store/useStore';
 import router from '@/router';
 import { SimpleStack, SimpleButton } from '@simple-education-dev/components';
 
@@ -28,60 +40,63 @@ import { AssignmentDetailSettings as AssignmentDetailSettingsTypes } from './asi
 
 // mainPage
 import NotificationCards from './landingPage/NotificationCards.vue';
-import AssignmentResourcelist from './landingPage/AssignmentResourcelist.vue';
+import AssignmentResourcelist, {
+  ResourceListAssignments,
+} from './landingPage/AssignmentResourcelist.vue';
 import QuickAddAssignment from './landingPage/QuickAddAssignment.vue';
-import ActionsButton from './landingPage/ActionsButton.vue';
-import MainPageEmptyState from './landingPage/ResourcelistEmptyState.vue';
 
 import AssignmentDetailSettings from './asignmentDetailSettings/AssignmentDetailSettings.vue';
 
-// Skelton
-import MainPageSkelton from './MainPageSkelton.vue';
-import AssignmentDetailSettingsSkelton from './asignmentDetailSettings/AssignmentDetailSettingsSkelton.vue';
+import { SeamApiTeacher } from '@/api/endpoints';
 
 export default defineComponent({
   components: {
     SimpleStack,
     SimpleButton,
-    MainPageSkelton,
     NotificationCards,
     AssignmentResourcelist,
-    ActionsButton,
     QuickAddAssignment,
-    MainPageEmptyState,
     AssignmentDetailSettings,
-    AssignmentDetailSettingsSkelton,
   },
-  setup(_, context) {
-    const store = useStore(context);
-    const initialValue = ref<AssignmentDetailSettingsTypes | null>({});
-    store.dispatch('getHolidays');
-    const allAssignments: [] = [];
-    const assignments = ['宿題1', '宿題2', '宿題3', '宿題4'];
+  setup() {
+    const loadingResource = [...new Array(6).fill({})];
+    const isLoading = ref(false);
+    const assignments = ref<ResourceListAssignments[]>([]);
+    (async () => {
+      isLoading.value = true;
+      const teacherId = 1;
+      const result = await SeamApiTeacher.getAssignments(teacherId);
+      assignments.value = result.data;
+      isLoading.value = false;
+    })();
+
     const transitionToAssignmentDetailSettingsPage = () => {
       router.push({
-        path: '/assignments/new',
+        name: 'newAssignmentDetailSettings',
+        params: { initialValue: {} as string },
       });
-    };
-    const transitionToMainPage = () => {
-      // nowPage.value = 'mainPage';
     };
     const handleToDetailSettings = (
       currentSettings: AssignmentDetailSettingsTypes
     ) => {
-      initialValue.value = currentSettings;
       router.push({
         name: 'newAssignmentDetailSettings',
-        params: { initialValue: initialValue.value as string },
+        params: { initialValue: currentSettings as string },
       });
     };
+    const handleAssignmentDelete = async (ids: number[]) => {
+      isLoading.value = true;
+      const result = await SeamApiTeacher.deleteAssignment(ids);
+      assignments.value = result.data;
+      isLoading.value = false;
+    };
     return {
-      allAssignments,
+      loadingResource,
+      isLoading,
       assignments,
       transitionToAssignmentDetailSettingsPage,
-      transitionToMainPage,
-      initialValue,
       handleToDetailSettings,
+      handleAssignmentDelete,
     };
   },
 });
@@ -107,9 +122,18 @@ export default defineComponent({
   grid-area: content;
   padding: $space-4;
 }
+.empty-state-img {
+  margin-top: $space-10;
+  width: 300px;
+  filter: drop-shadow(0px 5px 20px rgba(42, 49, 57, 0.2));
+}
+.empty-state-header {
+  font-size: $font-size-7;
+  font-weight: 500;
+}
 .assignments-resource-list {
-  background: lightcoral;
-  height: 80vh;
+  width: 95%;
+  margin: 0 auto;
 }
 .quick-assignment-add-card {
   grid-area: card;

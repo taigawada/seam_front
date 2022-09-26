@@ -29,16 +29,15 @@ export default defineComponent({
     const isFailed = ref(false);
     const assignmentsList = ref<AssignmentList[] | null>(null);
     (async () => {
+      const studentId = 123;
       const result = await Promise.all([
         store.dispatch('getHolidays'),
-        SeamApiStudent.getAllAssignments(123),
+        SeamApiStudent.getAllAssignments(studentId),
       ]).catch(() => {
         isFailed.value = true;
       });
-      console.log(result![1].data);
       assignmentsList.value = result![1].data;
     })();
-
     return {
       isFailed,
       assignmentsList,

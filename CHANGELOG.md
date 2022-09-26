@@ -1,5 +1,5 @@
 eils_front の package.json からの変更点
-vue-cli から vite 変更に伴い、下記を変更
+開発環境の変更に伴う変更
 
 ```
 /devDependencies
@@ -21,7 +21,6 @@ vue-cli から vite 変更に伴い、下記を変更
 
 ```
 /dependencies
-// 追加
 "@vue/composition-api": "^1.7.0",
 "@tiptap/extension-color": "^2.0.0-beta.12",
 "@tiptap/extension-link": "^2.0.0-beta.43",
@@ -31,7 +30,16 @@ vue-cli から vite 変更に伴い、下記を変更
 "@tiptap/vue-2": "^2.0.0-beta.84",
 "vue-i18n": "^8.27.2",
 "vue-i18n-bridge": "^9.2.2",
-"csv": "^6.2.0",
+"vuex-persist": "^3.1.3"
+
+// devDependencies
+"msw": "^0.47.2",
+```
+
+アップデート
+
+```
+"typescript": "^4.8.3", // nodeJSのビルドインモジュールの型を正しく認識しなかったため
 ```
 
 JSON を import するため、以下を変更
@@ -42,16 +50,24 @@ JSON を import するため、以下を変更
 "resolveJsonModule": true,
 ```
 
-メモ  
-祝日を取得した csv を 15 日おきくらいで更新してサーバー側に置きたい
+### バックエンドの方にお願いしたいこと
 
-#### 要件
+祝日の記載された CSV を更新する処理を実装してほしい。
+URL: (https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv)
 
-- SHIFT_JIS でエンコードされているので、UTF-8 に再フォーマットする
-- ヘッダーなし、データ型は[文字列<日付型>, 文字列<祝日名称>][]。
-- 1955 年からのデータが入っているので、前後 1 年分にする
+参考: https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html
 
-ページ遷移前に警告するモーダルを開くために、CBT 側で提出物管理から移動するとき、以下の関数を噛ませてほしい
+毎年 2 月に更新されるようです。
+
+### CBT フロントエンドの方にお願いしたいこと
+
+祝日データを LocalStrage に保管していて、ログイン時に祝日データを更新する処理を実装してほしい
+
+```
+store.dispach('getHolidays')
+```
+
+ページ遷移の警告モーダルを開くために、CBT 側で提出物管理から移動するとき、以下の関数を噛ませてほしい
 
 ```
 // before
@@ -60,9 +76,12 @@ const handleClick = () => {
 }
 // after
 import { useTransitionWarning } from '~/useTransitionWarning'
+
 const handleClick = () => {
     useTransitionWarning(this.$store, () => {
         ページ移動
     })
 }
 ```
+
+(composition api での記述です。options api, vue-property-decorator だとどう書くかわかりませんでした。動くとは思います。)

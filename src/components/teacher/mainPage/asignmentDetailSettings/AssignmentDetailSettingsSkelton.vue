@@ -59,7 +59,7 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
+@use '@simple-education-dev/components/globalStyles' as *;
 .settings-page-container {
   margin: $space-6;
   display: grid;

@@ -2,13 +2,14 @@ import Vue from 'vue';
 import Router from 'vue-router';
 
 import TeacherLanding from './components/teacher/TeacherLanding.vue';
-import TeacherMainPageSkelton from './components/teacher/mainPage/MainPageSkelton.vue';
 import TeacherMainPage from './components/teacher/mainPage/MainPage.vue';
-import AssignmentDetailSettings from './components/teacher/mainPage/asignmentDetailSettings/AssignmentDetailSettings.vue';
+import AssignmentsList from './components/teacher/mainPage/assignmentsList/AssignmentsList.vue';
+import AssignmentDetail from './components/teacher/mainPage/asignmentDetailSettings/AssignmentDetailSettingsIndex.vue';
 import SettingsPage from './components/teacher/settingsPage/SettingsPage.vue';
 
 import Student from './components/student/StudentLanding.vue';
 import AssignmentDetailPage from './components/student/assignmentDetailPage/AssignmentDetailPage.vue';
+import SubmissionStatus from './components/teacher/mainPage/submissionStatus/StatusIndex.vue';
 
 Vue.use(Router);
 
@@ -24,16 +25,29 @@ export default new Router({
       children: [
         {
           path: '/',
-          component: TeacherMainPageSkelton,
+          name: 'teacherLanding',
+          component: TeacherMainPage,
         },
         {
-          path: '/home',
-          component: TeacherMainPage,
+          path: '/assignments',
+          name: 'assignmentsList',
+          component: AssignmentsList,
         },
         {
           path: '/assignments/new',
           name: 'newAssignmentDetailSettings',
-          component: AssignmentDetailSettings,
+          component: AssignmentDetail,
+          props: true,
+        },
+        {
+          path: '/assignments/:assignmentId',
+          name: 'assignmentDetailSettings',
+          component: AssignmentDetail,
+        },
+        {
+          path: '/status/:assignmentId',
+          name: 'submissionStatus',
+          component: SubmissionStatus,
           props: true,
         },
         {

@@ -85,6 +85,7 @@ export default defineComponent({
     };
     const toDetailSettings = () => {
       context.emit('toDetailSettings', {
+        status: 'draft',
         title: title.value,
         description: discription.value,
         deadline: deadline.value,
@@ -109,7 +110,7 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
+@use '@simple-education-dev/components/globalStyles' as *;
 .quick-add-assigment-card {
   margin-top: $space-3;
   text-align: left;
