@@ -1,6 +1,7 @@
 import axios, { AxiosPromise, AxiosRequestConfig, CancelToken } from 'axios';
 import { AssignmentList } from '@/components/student/StudentLanding.vue';
 import { ResourceListAssignments } from '@/components/teacher/mainPage/landingPage/AssignmentResourcelist.vue';
+import { AssignmentAllResourcelist } from '@/components/teacher/mainPage/assignmentsList/AssignmentsList.vue';
 import { AssignmentStatus } from '@/components/teacher/mainPage/submissionStatus/StatusResourcelist.vue';
 import { UserSettings } from '@/components/teacher/settingsPage/SettingsPage.vue';
 
@@ -32,22 +33,23 @@ export class SeamApiStudent {
 export class SeamApiTeacher {
   // user settings
   static getSubmissionMethods(teacherId: number): AxiosPromise<string[]> {
-    return axios(
-      get('/seam/teacher/settings/submission-methods', { teacherId: teacherId })
-    );
+    return axios(get(`/seam/teacher/settings/submission-methods/${teacherId}`));
   }
   // at mainPage
   static getAssignments(
     teacherId: number
   ): AxiosPromise<ResourceListAssignments[]> {
-    return axios(get('/seam/teacher/assignments', { teacherId: teacherId }));
+    return axios(get(`/seam/teacher/assignments/${teacherId}`));
   }
   // at assignmentsList
   static searchAssignments(
+    teacherId: number,
     querys: object,
     cancelToken: CancelToken
-  ): AxiosPromise<ResourceListAssignments[]> {
-    return axios(get('/seam/teacher/search/assignments', querys, cancelToken));
+  ): AxiosPromise<AssignmentAllResourcelist[]> {
+    return axios(
+      get(`/seam/teacher/search/assignments/${teacherId}`, querys, cancelToken)
+    );
   }
   // at mainPage edit
   static getAssignment(
@@ -64,6 +66,10 @@ export class SeamApiTeacher {
       params.append('assignmentId', String(assignmentId))
     );
     return axios(get('/seam/teacher/assignments/delete/', params));
+  }
+  // get classes
+  static getClasses(teacherId: number): AxiosPromise<string[]> {
+    return axios(get(`/seam/teacher/classes/get/${teacherId}`));
   }
   // assignment create
   static createAssignment(assignments: string): AxiosPromise<number> {

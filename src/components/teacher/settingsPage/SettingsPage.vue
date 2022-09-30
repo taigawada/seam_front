@@ -117,7 +117,6 @@ export default defineComponent({
       isLoading.value = false;
     })();
     const handleSettingsChange = (newSettings: string[]) => {
-      console.log(newSettings);
       settings.submissionMethods = newSettings;
     };
     const isChanged = ref(false);

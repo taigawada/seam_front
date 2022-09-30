@@ -12,7 +12,9 @@
         </SimpleButton>
         <div class="submittion-status-header-text">サンプル課題1</div>
       </div>
-      <SimpleButton primary> 一括で評価する </SimpleButton>
+      <SimpleButton primary @click="handleConnectModalOpen">
+        一括で評価する
+      </SimpleButton>
     </div>
 
     <div class="submittion-status-summary-container">
@@ -26,8 +28,22 @@
       </div>
       <div class="submittion-status-summary">
         <div class="submittion-status-summary-box">
-          <div class="status-summary-header">未提出</div>
-          <div class="summary-result-container">
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            class="status-summary-header"
+            plain
+            width="40px"
+            height="10px"
+          >
+            未提出
+          </component>
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            class="summary-result-container"
+            plain
+            width="120px"
+            height="27px"
+          >
             <div
               class="summary-result"
               style="font-size: 18px; margin-right: 16px"
@@ -40,35 +56,101 @@
               clickable
               @click="() => (isOnlyLate = !isOnlyLate)"
             />
-          </div>
+          </component>
         </div>
         <div class="submittion-status-summary-box">
-          <div class="status-summary-header">提出率</div>
-          <div class="summary-result-container">
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            class="status-summary-header"
+            plain
+            width="40px"
+            height="10px"
+          >
+            提出率
+          </component>
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            class="summary-result-container"
+            plain
+            width="120px"
+            height="27px"
+          >
             <div class="summary-result">85%</div>
-          </div>
+          </component>
         </div>
         <div class="submittion-status-summary-box">
-          <div class="status-summary-header">全体平均提出率</div>
-          <div class="summary-result-container">
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            class="status-summary-header"
+            plain
+            width="40px"
+            height="10px"
+          >
+            全体平均提出率
+          </component>
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            class="summary-result-container"
+            plain
+            width="120px"
+            height="27px"
+          >
             <div class="summary-result">82%</div>
-          </div>
+          </component>
         </div>
         <div class="submittion-status-summary-box">
-          <div class="status-summary-header">累積平均提出率</div>
-          <div class="summary-result-container">
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            class="status-summary-header"
+            plain
+            width="40px"
+            height="10px"
+          >
+            累積平均提出率
+          </component>
+          <component
+            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            class="summary-result-container"
+            plain
+            width="120px"
+            height="27px"
+          >
             <div class="summary-result" style="margin-right: 16px">72.1%</div>
             <div :style="cumulativeAvgColor">
               {{ Math.abs(cumulativeAvg) }}%
             </div>
             <SimpleIcon
-              :source="cumulativeAvg < 0 ? ArrowTrendDown : ArrowTrendUp"
+              :source="cumulativeAvg <= 0 ? ArrowTrendDown : ArrowTrendUp"
               :fill="cumulativeAvgColor.color"
             />
-          </div>
+          </component>
         </div>
       </div>
     </div>
+    <SimpleModal
+      :open="connectModalOpen"
+      title="外部プラグインに接続"
+      :mainAction="{
+        text: '完了',
+        onAction: handlePreviousPage,
+      }"
+      :subAction="{
+        text: 'キャンセル',
+        onAction: handleConnectModalClose,
+      }"
+      @destroy="handleConnectModalClose"
+    >
+      <p style="text-align: left">aaa</p>
+      <SimpleSelector
+        radio
+        :items="[
+          { label: '1', id: 0 },
+          { label: '2', id: 1 },
+          { label: '3', id: 2 },
+        ]"
+        :value="'1'"
+      />
+    </SimpleModal>
     <SubmissionStatus
       :loading="isLoading"
       :resources="currentResources"
@@ -81,7 +163,10 @@ import { defineComponent, ref, computed, PropType } from '@vue/composition-api';
 import {
   SimpleButton,
   SimpleTabs,
+  SimpleModal,
+  SimpleSelector,
   SimpleIcon,
+  SimpleSkelton,
 } from '@simple-education-dev/components';
 import {
   ArrowLeft,
@@ -100,8 +185,11 @@ export default defineComponent({
   components: {
     SimpleButton,
     SimpleTabs,
+    SimpleModal,
+    SimpleSelector,
     SubmissionStatus,
     SimpleIcon,
+    SimpleSkelton,
   },
   props: {
     previous: {
@@ -116,7 +204,7 @@ export default defineComponent({
     };
     const isLoading = ref(true);
     const resources = ref<AssignmentStatus[]>([]);
-    const classes = ref([{ label: '-', id: '' }]);
+    const classes = ref([{ id: '', label: '-' }]);
     const currentClassesTabs = ref(0);
     const currentResources = computed(() =>
       resources.value.filter(
@@ -143,7 +231,7 @@ export default defineComponent({
       '--tab-width': `calc(100% - ${classes.value.length} * 100px)`,
     }));
     const isOnlyLate = ref(false);
-    const cumulativeAvg = computed(() => 0.1);
+    const cumulativeAvg = computed(() => 0);
     const cumulativeAvgColor = computed(() => {
       if (cumulativeAvg.value < 0) {
         return { color: 'rgba(196, 0, 0, 1)' };
@@ -151,6 +239,14 @@ export default defineComponent({
         return { color: 'rgba(0, 128, 96, 1)' };
       }
     });
+
+    const connectModalOpen = ref(false);
+    const handleConnectModalOpen = () => {
+      connectModalOpen.value = !connectModalOpen.value;
+    };
+    const handleConnectModalClose = () => {
+      connectModalOpen.value = false;
+    };
     return {
       handlePreviousPage,
       isLoading,
@@ -165,6 +261,10 @@ export default defineComponent({
       isOnlyLate,
       cumulativeAvg,
       cumulativeAvgColor,
+
+      connectModalOpen,
+      handleConnectModalOpen,
+      handleConnectModalClose,
 
       ArrowLeft,
       SearchFilter,
@@ -230,6 +330,7 @@ export default defineComponent({
 }
 .status-summary-header {
   font-size: $font-size-4;
+  margin-bottom: 10px;
 }
 .status-sammary-content {
   font-size: $font-size-6;

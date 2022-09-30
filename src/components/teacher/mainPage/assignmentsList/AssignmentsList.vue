@@ -84,7 +84,7 @@
     <AssignmentResourcelist
       style="margin-top: -20px"
       :loading="isLoading"
-      :resources="new Array(50).fill({})"
+      :resources="resources"
     />
   </div>
 </template>
@@ -117,6 +117,13 @@ import { SeamApiTeacher } from '@/api/endpoints';
 import axios, { CancelTokenSource } from 'axios';
 import { useElementBounding } from '@vueuse/core';
 import AssignmentResourcelist from './AssignmentResourcelist.vue';
+
+export interface AssignmentAllResourcelist {
+  id: number;
+  title: string;
+  deadline: Date;
+  status: string;
+}
 
 interface QueryParams {
   status: string;
@@ -188,6 +195,18 @@ export default defineComponent({
         () => {}
       );
     });
+    const resources = ref<AssignmentAllResourcelist[]>(new Array(50).fill({}));
+    const teacherId = 1;
+    (async () => {
+      const CancelToken = axios.CancelToken;
+      const source = CancelToken.source();
+      const result = await SeamApiTeacher.searchAssignments(
+        teacherId,
+        URLparams.removeFalsy(querys),
+        source.token
+      );
+      resources.value = result.data;
+    })();
     const isLoading = ref(false);
     const currentCancelToken = ref<CancelTokenSource | null>(null);
     const search = async () => {
@@ -195,11 +214,22 @@ export default defineComponent({
       const source = CancelToken.source();
       currentCancelToken.value = source;
       isLoading.value = true;
-      await SeamApiTeacher.searchAssignments(
-        URLparams.removeFalsy(querys),
-        source.token
-      );
-      isLoading.value = false;
+      try {
+        console.log(URLparams.removeFalsy(querys));
+        const result = await SeamApiTeacher.searchAssignments(
+          teacherId,
+          URLparams.removeFalsy(querys),
+          source.token
+        );
+        resources.value = result.data;
+        isLoading.value = false;
+        return;
+      } catch (e) {
+        if (axios.isCancel(e)) {
+          return;
+        }
+        throw e;
+      }
     };
     const handleStatusTabSelect = (select: number) => {
       querys.status = statusTabs[select].id;
@@ -269,6 +299,7 @@ export default defineComponent({
 
       handleSearchFieldChange,
       handleSearchFieldRemove,
+      resources,
 
       sortOptionsRef,
       sortOptionsRect,

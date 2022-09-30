@@ -4,12 +4,11 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 
-router.beforeEach((to, from, next) => {
+router.afterEach((to) => {
   if (to.name === 'userSettings') {
     store.dispatch('teacherTabSelect', 1);
-    next();
   } else {
-    next();
+    store.dispatch('teacherTabSelect', 0);
   }
 });
 

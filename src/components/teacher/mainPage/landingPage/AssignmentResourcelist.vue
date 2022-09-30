@@ -135,6 +135,29 @@
     >
       <p style="text-align: left">この操作は取り消せません。</p>
     </SimpleModal>
+    <SimpleModal
+      :open="exportAssignmentsModalOpen"
+      title="提出状況のエクスポート"
+      :mainAction="{
+        text: 'エクスポート',
+        onAction: () => void 0,
+      }"
+      :subAction="{
+        text: 'キャンセル',
+        onAction: handleExportAssignmentsClose,
+      }"
+      @destroy="handleExportAssignmentsClose"
+    >
+      <div style="text-align: left">
+        <SimpleSelector
+          caption="エクスポートする提出物の選択"
+          radio
+          :items="exportMethods"
+          :value="exportMethodSelect"
+          @change:select="exportMethodSelectChange"
+        />
+      </div>
+    </SimpleModal>
   </div>
 </template>
 <script lang="ts">
@@ -151,6 +174,7 @@ import {
   SimpleTag,
   SimplePopover,
   SimpleModal,
+  SimpleSelector,
 } from '@simple-education-dev/components';
 import { GabbageBox } from '@simple-education-dev/icons';
 import { format } from 'date-fns';
@@ -175,6 +199,7 @@ export default defineComponent({
     SimpleTag,
     SimplePopover,
     SimpleModal,
+    SimpleSelector,
   },
   props: {
     loading: {
@@ -188,14 +213,24 @@ export default defineComponent({
   },
   setup(props, context) {
     const exportActionsOpen = ref(false);
+    // assignments export modal
+    const exportAssignmentsModalOpen = ref(false);
+    const handleExportAssignmentsOpen = () => {
+      exportActionsOpen.value = false;
+      exportAssignmentsModalOpen.value = !exportAssignmentsModalOpen.value;
+    };
+    const handleExportAssignmentsClose = () => {
+      exportAssignmentsModalOpen.value = false;
+    };
+    // export
     const exportWays = [
       {
         label: 'Excel形式でエクスポート',
-        onAction: () => console.log('todo -> excel'),
+        onAction: handleExportAssignmentsOpen,
       },
       {
         label: 'CSV形式でエクスポート',
-        onAction: () => console.log('todo -> csv'),
+        onAction: handleExportAssignmentsOpen,
       },
     ];
     const handleToggle = () => {
@@ -208,6 +243,17 @@ export default defineComponent({
       router.push({
         name: 'assignmentsList',
       });
+    };
+    const exportMethods = [
+      { label: '現在のページ', value: 'current_page' },
+      { label: '全ての提出物', value: 'all_assignments' },
+      { label: '今学期', value: 'current_semester' },
+      { label: '選択済み: 0件', value: 'selected_items', disabled: true },
+    ];
+    const exportMethodSelect = ref('current_page');
+    const exportMethodSelectChange = (newValue: string) => {
+      console.log(newValue);
+      exportMethodSelect.value = newValue;
     };
 
     // status translate
@@ -287,6 +333,9 @@ export default defineComponent({
       handleToggle,
       handleClose,
       handleTransitionAssignmentsList,
+      exportMethods,
+      exportMethodSelect,
+      exportMethodSelectChange,
       status,
       resourceListSelected,
       handleResourceListChange,
@@ -301,6 +350,10 @@ export default defineComponent({
       deleteWarningModalOpen,
       handleDeleteWarningMainAction,
       handleDeleteWarningModalDestroy,
+
+      exportAssignmentsModalOpen,
+      handleExportAssignmentsOpen,
+      handleExportAssignmentsClose,
 
       GabbageBox,
     };

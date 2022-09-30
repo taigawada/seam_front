@@ -50,14 +50,15 @@ JSON を import するため、以下を変更
 "resolveJsonModule": true,
 ```
 
-### バックエンドの方にお願いしたいこと
+### タスクスケジューラの動作
 
-祝日の記載された CSV を更新する処理を実装してほしい。
+- 祝日の記載された CSV を更新する処理
+
+毎年 3 月に以下の URL にある CSV をダウンロードして更新する
+
 URL: (https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv)
 
-参考: https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html
-
-毎年 2 月に更新されるようです。
+参考: https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html#syukujitu
 
 ### CBT フロントエンドの方にお願いしたいこと
 
@@ -84,4 +85,4 @@ const handleClick = () => {
 }
 ```
 
-(composition api での記述です。options api, vue-property-decorator だとどう書くかわかりませんでした。動くとは思います。)
+(composition api での記述です。)

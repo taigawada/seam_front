@@ -30,17 +30,20 @@ export const handlers = [
   }),
 
   //teacher
-  rest.get('/seam/teacher/settings/submission-methods', (req, res, ctx) => {
-    // eslint-disable-next-line no-unused-vars
-    const teacherId = req.url.searchParams.get('teacherId');
-    return res(
-      ctx.delay(800),
-      ctx.status(200),
-      ctx.json(['提出方法1', '提出方法2', '提出方法3'])
-    );
-  }),
-  rest.get('/seam/teacher/assignments', (req, res, ctx) => {
-    const teacherId = req.url.searchParams.get('teacherId');
+  rest.get(
+    '/seam/teacher/settings/submission-methods/:teacherId',
+    (req, res, ctx) => {
+      // eslint-disable-next-line no-unused-vars
+      const { teacherId } = req.params;
+      return res(
+        ctx.delay(800),
+        ctx.status(200),
+        ctx.json(['提出方法1', '提出方法2', '提出方法3'])
+      );
+    }
+  ),
+  rest.get('/seam/teacher/assignments/:teacherId', (req, res, ctx) => {
+    const { teacherId } = req.params;
     const assignments = assignmentTeacherDB.filter(
       (table) => table.teacherId === parseInt(teacherId as string)
     );
@@ -66,8 +69,8 @@ export const handlers = [
   }),
 
   // search
-  rest.get('/seam/teacher/search/assignments', (req, res, ctx) => {
-    const teacherId = req.url.searchParams.get('teacherId');
+  rest.get('/seam/teacher/search/assignments/:teacherId', (req, res, ctx) => {
+    const { teacherId } = req.params;
     const assignments = assignmentTeacherDB.filter(
       (table) => table.teacherId === parseInt(teacherId as string)
     );

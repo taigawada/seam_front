@@ -111,6 +111,7 @@ import {
   SimpleResourceList,
   ResourceItem,
   SimplePagination,
+  SimpleTag,
   SimpleSkelton,
 } from '@simple-education-dev/components';
 import { GabbageBox } from '@simple-education-dev/icons';
@@ -124,6 +125,7 @@ export default defineComponent({
     ResourceItem,
     SimplePagination,
     SimpleSkelton,
+    SimpleTag,
   },
   props: {
     loading: {
