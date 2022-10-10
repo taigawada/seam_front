@@ -13,6 +13,7 @@
       </div>
       <div class="assignment-detail-submit-button">
         <SubmitButton
+          :disabled="isLoading"
           :isSubmitted="isSubmitted"
           :onSubmit="handleOnSubmit"
           :onSubmitCancel="handleOnSubmitCancel"
@@ -25,13 +26,26 @@
       </div>
     </div>
     <div class="assignment-detail-title-container">
-      <div class="assignment-detail-icon">ICON</div>
+      <div class="assignment-detail-icon">
+        <component
+          :is="isLoading ? 'SimpleSkeleton' : 'span'"
+          display="inline"
+          :size="{
+            width: '40px',
+            height: '40px',
+          }"
+        >
+          ICON
+        </component>
+      </div>
       <div class="assignment-detail-title">
         <component
           :is="isLoading ? 'SimpleSkeleton' : 'span'"
-          body
-          width="400px"
-          height="15px"
+          display="inline"
+          :size="{
+            width: '400px',
+            height: '40px',
+          }"
         >
           {{ assignment.title }}
         </component>
@@ -44,9 +58,11 @@
         </div>
         <component
           :is="isLoading ? 'SimpleSkeleton' : 'div'"
-          body
-          width="400px"
-          height="15px"
+          display="inline"
+          :size="{
+            width: '600px',
+            height: '15px',
+          }"
         >
           {{ deadline }}
         </component>
@@ -66,7 +82,7 @@
         class="assignment-detail-description"
         v-html="assignment.descriptionHTML"
       ></div>
-      <SimpleSkeleton v-show="isLoading" text :line="8" />
+      <SimpleSkeleton v-show="isLoading" type="text" :lines="8" />
     </div>
   </div>
 </template>
@@ -182,7 +198,7 @@ export default defineComponent({
   width: 80%;
   margin: 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 .assignment-detail-deadline-container {
   display: flex;

@@ -55,6 +55,9 @@ export default defineComponent({
     CloseCross,
   },
   props: {
+    disabled: {
+      type: Boolean,
+    },
     isSubmitted: {
       type: Boolean,
       required: true,
@@ -88,7 +91,7 @@ export default defineComponent({
         : 'rgba(255, 155, 85, 1)',
     }));
     const handleMousedown = async () => {
-      if (!isDisabled.value) {
+      if (!isDisabled.value && !props.disabled) {
         isDisabled.value = true;
         await sleep(400);
         isTextShow.value = true;
