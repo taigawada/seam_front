@@ -10,12 +10,11 @@ import { defineComponent } from '@vue/composition-api';
 export default defineComponent({});
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .student-main-page {
-  margin: $space-10;
+  margin: var(--space-10);
 }
 .student-main-page-title {
   text-align: left;
-  font-size: $font-size-8;
+  font-size: var(--font-size-8);
 }
 </style>

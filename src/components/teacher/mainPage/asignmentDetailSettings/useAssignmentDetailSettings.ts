@@ -11,7 +11,7 @@ import { format, getHours, getMinutes, isPast, isValid } from 'date-fns';
 
 import _ from 'lodash';
 import { Store } from 'vuex';
-import { nowDateInJST } from '@/components/student/compositions/useRemainingDays';
+import SimpleDate from '@/utilities/SimpleDate';
 
 export interface CyclePeriod {
   weekIndex: number;
@@ -34,11 +34,22 @@ export interface AssignmentDetailSettings {
 }
 export const useAssignmentDetailSettings = (
   initial: AssignmentDetailSettings = {},
-  initialSubmissionMethod: string,
+  initialSubmissionMethods: string[],
   store: Store<any>
 ) => {
   const CyclePeriodTransitionRef = ref<HTMLElement | null>(null);
   const initialSettings = ref<AssignmentDetailSettings>(initial);
+  const initialSubmissionMethod = () => {
+    if (initial.submissionMethod) {
+      if (initialSubmissionMethods.includes(initial.submissionMethod)) {
+        return initial.submissionMethod;
+      } else {
+        return 'other';
+      }
+    } else {
+      return '';
+    }
+  };
   const settings = reactive({
     status: initial.status ? initial.status : 'draft',
     releaseDate: isValid(initial.releaseDate) ? initial.releaseDate : null,
@@ -46,10 +57,9 @@ export const useAssignmentDetailSettings = (
     title: initial.title ? initial.title : '',
     description: initial.description ? initial.description : '',
     deadline: isValid(initial.deadline) ? initial.deadline : undefined,
-    submissionMethod: initialSubmissionMethod,
-    otherSubmissionMethod: initial.otherSubmissionMethod
-      ? initial.otherSubmissionMethod
-      : '',
+    submissionMethod: initialSubmissionMethod(),
+    otherSubmissionMethod:
+      initialSubmissionMethod() === 'other' ? initial.submissionMethod : '',
     isRepeat: initial.isRepeat === undefined ? false : initial.isRepeat,
     submitOnHoliday:
       initial.submitOnHoliday === undefined ? false : initial.submitOnHoliday,
@@ -136,12 +146,12 @@ export const useAssignmentDetailSettings = (
     }
   });
   const delayedSubmissionDeadlineTime = reactive({
-    meridiem: getHours(nowDateInJST) < 12 ? '午前' : '午後',
+    meridiem: getHours(SimpleDate.now()) < 12 ? '午前' : '午後',
     hours:
-      getHours(nowDateInJST) < 12
-        ? getHours(nowDateInJST)
-        : getHours(nowDateInJST) % 12,
-    minutes: getMinutes(nowDateInJST),
+      getHours(SimpleDate.now()) < 12
+        ? getHours(SimpleDate.now())
+        : getHours(SimpleDate.now()) % 12,
+    minutes: getMinutes(SimpleDate.now()),
   });
   const isChanged = ref(false);
   watch(settings, () => {
@@ -184,10 +194,6 @@ export const useAssignmentDetailSettings = (
       if (!deadlineTime.value) errors.push('締め切り時刻を指定してください。');
     }
     return errors;
-  });
-  const titleLengthError = computed(() => {
-    if (settings.title.length > 50)
-      return 'タイトルは50文字以内である必要があります。';
   });
   const onSaveErrors = computed(() => {
     const errors = [];
@@ -252,6 +258,5 @@ export const useAssignmentDetailSettings = (
     validationErrors,
     studentPreviewErrors,
     onSaveErrors,
-    titleLengthError,
   };
 };

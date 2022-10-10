@@ -1,20 +1,26 @@
 <template>
-  <div class="tiptap-editor-container">
+  <div>
     <span class="tiptap-editor-caption">{{ caption }}</span>
-    <TipTapPalette
-      :editor="editor"
-      :open="editorFocus"
-      @enter="handleMouseenter"
-      @leave="handleMouseleave"
-      @heading="handleHeadingToggle"
-      @subHeading="handleSubHeadingToggle"
-      @paragraph="handleParagraphToggle"
-      @link="handleSetLink"
-      @unlink="handleUnsetLink"
-      @change:color="handleColorSelect"
-      @color:unset="handleColorUnset"
-    />
-    <EditorContent :editor="editor" />
+    <div class="tiptap-editor-container">
+      <div
+        class="tiptap-editor-focused-border-backdrop"
+        :style="{ '--outline-backdrop-weight': outputStyles }"
+      ></div>
+      <TipTapPalette
+        :editor="editor"
+        :open="editorFocus"
+        @enter="handleMouseenter"
+        @leave="handleMouseleave"
+        @heading="handleHeadingToggle"
+        @subHeading="handleSubHeadingToggle"
+        @paragraph="handleParagraphToggle"
+        @link="handleSetLink"
+        @unlink="handleUnsetLink"
+        @change:color="handleColorSelect"
+        @color:unset="handleColorUnset"
+      />
+      <EditorContent :editor="editor" />
+    </div>
   </div>
 </template>
 
@@ -27,6 +33,7 @@ import {
   watch,
   toRefs,
 } from '@vue/composition-api';
+import { useFocusBackdrop } from '@simple-education-dev/components';
 import { Editor, EditorContent } from '@tiptap/vue-2';
 import BasicSettings from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -71,6 +78,7 @@ export default defineComponent({
     };
     const editorFocus = ref(false);
     const editor = ref<Editor | null>(null);
+    const { outputStyles, focusinFn, focusoutFn } = useFocusBackdrop();
     onMounted(() => {
       editor.value = new Editor({
         content: props.initialValue,
@@ -90,12 +98,14 @@ export default defineComponent({
         },
         onFocus: () => {
           editorFocus.value = true;
+          focusinFn();
         },
         onBlur: () => {
           if (mouseHovered.value && editor.value) {
             editor.value.view.dom.focus();
           } else {
             editorFocus.value = false;
+            focusoutFn();
           }
         },
       });
@@ -126,6 +136,7 @@ export default defineComponent({
       editor.value?.chain().focus().setParagraph().run();
     };
     const handleSetLink = (url: string | null, target: '_blank' | '_self') => {
+      console.log(url, target);
       if (url === null) {
         return;
       }
@@ -133,6 +144,7 @@ export default defineComponent({
         editor.value?.chain().focus().extendMarkRange('link').unsetLink().run();
         return;
       }
+
       editor.value
         ?.chain()
         .focus()
@@ -155,6 +167,7 @@ export default defineComponent({
       handleMouseleave,
       editor,
       editorFocus,
+      outputStyles,
       handleHeadingToggle,
       handleSubHeadingToggle,
       handleParagraphToggle,
@@ -167,25 +180,24 @@ export default defineComponent({
 });
 </script>
 <style lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .tiptap-editor-container {
   position: relative;
   text-align: left;
   .tiptap-editor-caption {
-    font-size: $font-size-3;
+    font-size: var(--font-size-3);
     pointer-events: none;
-    padding: 0 $space-1;
+    padding: 0 var(--space-1);
   }
 }
 .ProseMirror {
   font-family: Helvetica, Arial, sans-serif;
-  border-radius: $border-radius-1;
-  background: $surface;
+  border-radius: var(--border-radius-1);
+  background: var(--surface);
   padding-top: 0;
-  padding-left: $space-3;
-  padding-right: $space-3;
-  padding-bottom: $space-10;
-  border: 1px solid $border-weak;
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+  padding-bottom: var(--space-10);
+  border: 1px solid var(--border-weak);
   transition: border 0.5s;
   min-height: 120px;
   p {
@@ -194,11 +206,11 @@ export default defineComponent({
     pointer-events: none;
   }
   h1 {
-    font-size: $font-size-8;
+    font-size: var(--font-size-8);
     line-height: 1.1;
   }
   h3 {
-    font-size: $font-size-6;
+    font-size: var(--font-size-6);
     line-height: 1.1;
   }
   a {
@@ -213,7 +225,16 @@ export default defineComponent({
   height: 0;
 }
 .ProseMirror:focus {
-  border: 1px solid $theme-color;
   outline: 0;
+}
+.tiptap-editor-focused-border-backdrop {
+  position: absolute;
+  width: calc(100% + 1px);
+  height: calc(100% + 1px);
+  border-radius: var(--border-radius-1);
+  box-shadow: 0 0 0 var(--outline-backdrop-weight) var(--theme-color);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>

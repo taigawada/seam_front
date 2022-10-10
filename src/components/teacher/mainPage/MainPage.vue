@@ -41,13 +41,15 @@ import { AssignmentDetailSettings as AssignmentDetailSettingsTypes } from './asi
 // mainPage
 import NotificationCards from './landingPage/NotificationCards.vue';
 import AssignmentResourcelist, {
-  ResourceListAssignments,
+  ResourceListAssignment,
 } from './landingPage/AssignmentResourcelist.vue';
 import QuickAddAssignment from './landingPage/QuickAddAssignment.vue';
 
 import AssignmentDetailSettings from './asignmentDetailSettings/AssignmentDetailSettings.vue';
 
 import { SeamApiTeacher } from '@/api/endpoints';
+import JSONDecoder from '@/utilities/JSONDecoder';
+import store from '@/store';
 
 export default defineComponent({
   components: {
@@ -61,12 +63,13 @@ export default defineComponent({
   setup() {
     const loadingResource = [...new Array(6).fill({})];
     const isLoading = ref(false);
-    const assignments = ref<ResourceListAssignments[]>([]);
+    const assignments = ref<ResourceListAssignment[]>([]);
     (async () => {
       isLoading.value = true;
-      const teacherId = 1;
-      const result = await SeamApiTeacher.getAssignments(teacherId);
-      assignments.value = result.data;
+      const result = await SeamApiTeacher.getAssignments(
+        store.getters.teacherId as number
+      );
+      assignments.value = JSONDecoder.dateParse(result.data);
       isLoading.value = false;
     })();
 
@@ -102,9 +105,8 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/tokens/styles' as *;
 .main-page-container {
-  margin: 0 $space-6 $space-6 $space-6;
+  margin: 0 var(--space-6) var(--space-6) var(--space-6);
   display: grid;
   grid-template-rows: 80px 1fr;
   grid-template-columns: 1fr 380px;
@@ -114,21 +116,21 @@ export default defineComponent({
     "content    card"
 }
 .main-page-buttons {
-  margin-top: $space-8;
+  margin-top: var(--space-8);
   grid-area: buttons;
   align-self: center;
 }
 .landing-page-content {
   grid-area: content;
-  padding: $space-4;
+  padding: var(--space-4);
 }
 .empty-state-img {
-  margin-top: $space-10;
+  margin-top: var(--space-10);
   width: 300px;
   filter: drop-shadow(0px 5px 20px rgba(42, 49, 57, 0.2));
 }
 .empty-state-header {
-  font-size: $font-size-7;
+  font-size: var(--font-size-7);
   font-weight: 500;
 }
 .assignments-resource-list {

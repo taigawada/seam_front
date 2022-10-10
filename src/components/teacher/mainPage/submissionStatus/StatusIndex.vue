@@ -10,39 +10,46 @@
         >
           戻る
         </SimpleButton>
-        <div class="submittion-status-header-text">サンプル課題1</div>
+        <div class="submittion-status-header-text">
+          {{ currentAssignment?.title }}
+        </div>
+        <SimpleTag v-show="!isLoading" success :remove="false">
+          <span style="font-size: 0.825rem">{{ status }}</span>
+        </SimpleTag>
       </div>
       <SimpleButton primary @click="handleConnectModalOpen">
         一括で評価する
       </SimpleButton>
     </div>
-
     <div class="submittion-status-summary-container">
       <div class="class-tab-base" :style="tabWidthStyle">
         <SimpleTabs
           :tabs="classes"
           :selected="currentClassesTabs"
           color="rgba(44, 62, 80, 1)"
+          textColor="rgba(44, 62, 80, 1)"
           @change="handleClassesTabSelect"
         ></SimpleTabs>
       </div>
       <div class="submittion-status-summary">
         <div class="submittion-status-summary-box">
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            :is="isLoading ? 'SimpleSkeleton' : 'span'"
             class="status-summary-header"
-            plain
-            width="40px"
-            height="10px"
+            :size="{
+              width: '40px',
+              height: '10px',
+            }"
           >
             未提出
           </component>
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            :is="isLoading ? 'SimpleSkeleton' : 'div'"
             class="summary-result-container"
-            plain
-            width="120px"
-            height="27px"
+            :size="{
+              width: '120px',
+              height: '27px',
+            }"
           >
             <div
               class="summary-result"
@@ -60,60 +67,66 @@
         </div>
         <div class="submittion-status-summary-box">
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            :is="isLoading ? 'SimpleSkeleton' : 'span'"
             class="status-summary-header"
-            plain
-            width="40px"
-            height="10px"
+            :size="{
+              width: '40px',
+              height: '10px',
+            }"
           >
             提出率
           </component>
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            :is="isLoading ? 'SimpleSkeleton' : 'div'"
             class="summary-result-container"
-            plain
-            width="120px"
-            height="27px"
+            :size="{
+              width: '120px',
+              height: '27px',
+            }"
           >
             <div class="summary-result">85%</div>
           </component>
         </div>
         <div class="submittion-status-summary-box">
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            :is="isLoading ? 'SimpleSkeleton' : 'span'"
             class="status-summary-header"
-            plain
-            width="40px"
-            height="10px"
+            :size="{
+              width: '40px',
+              height: '10px',
+            }"
           >
             全体平均提出率
           </component>
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            :is="isLoading ? 'SimpleSkeleton' : 'div'"
             class="summary-result-container"
-            plain
-            width="120px"
-            height="27px"
+            :size="{
+              width: '120px',
+              height: '27px',
+            }"
           >
             <div class="summary-result">82%</div>
           </component>
         </div>
         <div class="submittion-status-summary-box">
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'span'"
+            :is="isLoading ? 'SimpleSkeleton' : 'span'"
             class="status-summary-header"
-            plain
-            width="40px"
-            height="10px"
+            :size="{
+              width: '40px',
+              height: '10px',
+            }"
           >
             累積平均提出率
           </component>
           <component
-            :is="isLoading ? 'SimpleSkelton' : 'div'"
+            :is="isLoading ? 'SimpleSkeleton' : 'div'"
             class="summary-result-container"
-            plain
-            width="120px"
-            height="27px"
+            :size="{
+              width: '120px',
+              height: '27px',
+            }"
           >
             <div class="summary-result" style="margin-right: 16px">72.1%</div>
             <div :style="cumulativeAvgColor">
@@ -152,10 +165,16 @@
       />
     </SimpleModal>
     <SubmissionStatus
+      v-if="!isEmpty"
       :loading="isLoading"
       :resources="currentResources"
       :classes="classes"
     />
+    <div v-else>
+      <img src="/src/public/emptyState1.png" class="empty-state-img" />
+      <h2 class="empty-state-header">課題が提出されていません</h2>
+      <p>提出状況は、ここに表示されます。</p>
+    </div>
   </div>
 </template>
 <script lang="ts">
@@ -166,7 +185,8 @@ import {
   SimpleModal,
   SimpleSelector,
   SimpleIcon,
-  SimpleSkelton,
+  SimpleTag,
+  SimpleSkeleton,
 } from '@simple-education-dev/components';
 import {
   ArrowLeft,
@@ -175,11 +195,15 @@ import {
   ArrowTrendDown,
   ArrowTrendUp,
 } from '@simple-education-dev/icons';
+import { statusTranslate } from '../landingPage/AssignmentResourcelist.vue';
 import SubmissionStatus from './StatusResourcelist.vue';
 import { SeamApiTeacher } from '@/api/endpoints';
 import JSONDecoder from '@/utilities/JSONDecoder';
 import { AssignmentStatus } from './StatusResourcelist.vue';
 import router from '@/router';
+import { isError } from 'lodash';
+import { ResourceListAssignment } from '../landingPage/AssignmentResourcelist.vue';
+import { AxiosResponse } from 'axios';
 
 export default defineComponent({
   components: {
@@ -188,8 +212,9 @@ export default defineComponent({
     SimpleModal,
     SimpleSelector,
     SubmissionStatus,
+    SimpleTag,
     SimpleIcon,
-    SimpleSkelton,
+    SimpleSkeleton,
   },
   props: {
     previous: {
@@ -203,6 +228,7 @@ export default defineComponent({
       router.push({ name: props.previous });
     };
     const isLoading = ref(true);
+    const currentAssignment = ref<ResourceListAssignment>();
     const resources = ref<AssignmentStatus[]>([]);
     const classes = ref([{ id: '', label: '-' }]);
     const currentClassesTabs = ref(0);
@@ -211,19 +237,38 @@ export default defineComponent({
         (data) => data.room === classes.value[currentClassesTabs.value].id
       )
     );
-
+    const isEmpty = ref(false);
     (async () => {
       isLoading.value = true;
       const assignmentId = parseInt(router.currentRoute.params.assignmentId);
-      const result = await SeamApiTeacher.getStatus(assignmentId);
-      resources.value = JSONDecoder.dateParse(
-        result.data
-      ) as AssignmentStatus[];
-      classes.value = [...new Set(result.data.map((data) => data.room))].map(
-        (room) => ({ id: room, label: room })
-      );
-      isLoading.value = false;
+      const promises = [
+        SeamApiTeacher.getStatus(assignmentId),
+        SeamApiTeacher.getAssignment(assignmentId),
+      ];
+      const result = await Promise.all(promises);
+      const statuses = result[0] as AxiosResponse<AssignmentStatus[]>;
+      const assignment = result[1] as AxiosResponse<ResourceListAssignment>;
+      if (statuses.data.length) {
+        resources.value = JSONDecoder.dateParse(
+          statuses.data
+        ) as AssignmentStatus[];
+        classes.value = [
+          ...new Set(statuses.data.map((data) => data.room)),
+        ].map((room) => ({ id: room, label: room }));
+        isLoading.value = false;
+      } else {
+        isEmpty.value = true;
+      }
+      if (!isError(assignment)) {
+        currentAssignment.value = assignment.data;
+      }
     })();
+    const status = computed(() =>
+      statusTranslate(
+        currentAssignment.value?.status!,
+        currentAssignment.value?.deadline!
+      )
+    );
     const handleClassesTabSelect = (select: number) => {
       currentClassesTabs.value = select;
     };
@@ -250,10 +295,13 @@ export default defineComponent({
     return {
       handlePreviousPage,
       isLoading,
+      isEmpty,
+      currentAssignment,
       resources,
       classes,
       currentClassesTabs,
       currentResources,
+      status,
 
       handleClassesTabSelect,
       tabWidthStyle,
@@ -276,12 +324,11 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .submittion-status-container {
-  padding: 0 $space-6 $space-6 $space-6;
+  padding: 0 var(--space-6) var(--space-6) var(--space-6);
 }
 .submittion-status-header {
-  padding: $space-4 0;
+  padding: var(--space-4) 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -292,8 +339,8 @@ export default defineComponent({
   justify-content: flex-start;
 }
 .submittion-status-header-text {
-  font-size: $font-size-8;
-  margin-left: $space-4;
+  font-size: var(--font-size-8);
+  margin-left: var(--space-4);
 }
 .class-tab-base {
   position: relative;
@@ -308,12 +355,12 @@ export default defineComponent({
   width: 100%;
   height: 1px;
   display: block;
-  border-bottom: 1px solid $border;
+  border-bottom: 1px solid var(--border);
   z-index: -1;
 }
 .submittion-status-summary-container {
-  border-radius: $border-radius-1;
-  margin-bottom: $space-4;
+  border-radius: var(--border-radius-1);
+  margin-bottom: var(--space-4);
   background-image: linear-gradient(
     135deg,
     rgb(219, 229, 255),
@@ -325,15 +372,15 @@ export default defineComponent({
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 .submittion-status-summary-box {
-  padding: $space-4 0;
+  padding: var(--space-4) 0;
   color: #000000;
 }
 .status-summary-header {
-  font-size: $font-size-4;
+  font-size: var(--font-size-4);
   margin-bottom: 10px;
 }
 .status-sammary-content {
-  font-size: $font-size-6;
+  font-size: var(--font-size-6);
 }
 .summary-result-container {
   display: flex;
@@ -341,6 +388,11 @@ export default defineComponent({
   justify-content: center;
 }
 .summary-result {
-  font-size: $font-size-7;
+  font-size: var(--font-size-7);
+}
+.empty-state-img {
+  margin-top: var(--space-10);
+  width: 300px;
+  filter: drop-shadow(0px 5px 20px rgba(42, 49, 57, 0.2));
 }
 </style>

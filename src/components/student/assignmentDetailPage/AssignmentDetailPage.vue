@@ -27,26 +27,46 @@
     <div class="assignment-detail-title-container">
       <div class="assignment-detail-icon">ICON</div>
       <div class="assignment-detail-title">
-        {{ assignment.title }}
+        <component
+          :is="isLoading ? 'SimpleSkeleton' : 'span'"
+          body
+          width="400px"
+          height="15px"
+        >
+          {{ assignment.title }}
+        </component>
       </div>
     </div>
-    <p class="assignment-detail-deadline">
-      {{ $t('deadline') }}:
-      {{ deadline }}
-    </p>
+    <div class="assignment-detail-deadline-container">
+      <div class="assignment-detail-deadline">
+        <div style="white-space: nowrap; margin-right: var(--space-4)">
+          {{ $t('deadline') }}:
+        </div>
+        <component
+          :is="isLoading ? 'SimpleSkeleton' : 'div'"
+          body
+          width="400px"
+          height="15px"
+        >
+          {{ deadline }}
+        </component>
+      </div>
+    </div>
     <div class="assignment-detail-content">
       <div
         style="
           box-sizing: border-box;
           height: 1px;
-          border: 0.5px solid rgba(0, 0, 0, 0.3);
+          border: 0.5px solid var(--text);
           margin: 10px 0;
         "
       ></div>
       <div
+        v-if="!isLoading"
         class="assignment-detail-description"
-        v-html="$route.query.descriptionHTML"
+        v-html="assignment.descriptionHTML"
       ></div>
+      <SimpleSkeleton v-show="isLoading" text :line="8" />
     </div>
   </div>
 </template>
@@ -55,16 +75,18 @@ import { defineComponent } from '@vue/composition-api';
 // import { useStore } from '../../../store/useStore';
 import { useAssignmentDetailPage } from './useAssignmentDetailPage';
 import { useI18n } from 'vue-i18n-bridge';
-import { nowDateInJST } from '../compositions/useRemainingDays';
-import { SimpleButton } from '@simple-education-dev/components';
+import SimpleDate from '@/utilities/SimpleDate';
+import { SimpleButton, SimpleSkeleton } from '@simple-education-dev/components';
 import SubmitButton from './submitButton/SubmitButton.vue';
 import { ArrowLeft } from '@simple-education-dev/icons';
 import { format } from 'date-fns';
+import router from '@/router';
 
 export default defineComponent({
   components: {
     SimpleButton,
     SubmitButton,
+    SimpleSkeleton,
   },
   props: {
     title: {
@@ -87,20 +109,28 @@ export default defineComponent({
   },
   setup(_) {
     const { t } = useI18n();
-    const { assignment, deadline, isPreview, isSubmitted, submittedDate } =
-      useAssignmentDetailPage();
+    const {
+      assignment,
+      deadline,
+      isPreview,
+      isLoading,
+      isSubmitted,
+      submittedDate,
+    } = useAssignmentDetailPage();
     const handlePrevious = () => {
       if (isPreview.value) {
         window.close();
+      } else {
+        router.push({ name: 'student' });
       }
     };
     const handleOnSubmit = async () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      return JSON.stringify(nowDateInJST);
+      return JSON.stringify(SimpleDate.now);
     };
     const handleOnSubmitCancel = async () => {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      return '取り消し';
+      return JSON.stringify(SimpleDate.now);
     };
     const handleSubmitSuccess = (time: string) => {
       isSubmitted.value = !isSubmitted.value;
@@ -118,6 +148,7 @@ export default defineComponent({
     };
     return {
       handlePrevious,
+      isLoading,
       assignment,
       deadline,
       handleOnSubmit,
@@ -132,9 +163,8 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .assignment-detail-container {
-  margin: $space-16 $space-6 $space-6 $space-6;
+  margin: var(--space-16) var(--space-6) var(--space-6) var(--space-6);
 }
 .assignment-detail-header {
   width: 90%;
@@ -152,23 +182,33 @@ export default defineComponent({
   width: 80%;
   margin: 0 auto;
   display: flex;
+  align-items: center;
 }
-.assignment-detail-deadline {
+.assignment-detail-deadline-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   width: 80%;
   margin: 0 auto;
   text-align: left;
 }
+.assignment-detail-deadline {
+  display: inline-flex;
+  align-items: center;
+}
 .assignment-detail-icon {
   width: 40px;
   height: 40px;
+  line-height: 40px;
+  margin-right: var(--space-4);
 }
 .assignment-detail-title {
-  font-size: $font-size-10;
+  font-size: var(--font-size-10);
   text-align: left;
 }
 .assignment-detail-submit-date {
   color: rgba(53, 146, 185, 1);
-  font-size: $font-size-4;
+  font-size: var(--font-size-4);
 }
 .assignment-detail-content {
   width: 80%;
@@ -177,17 +217,17 @@ export default defineComponent({
 }
 .assignment-detail-description {
   ::v-deep h1 {
-    font-size: $font-size-8;
+    font-size: var(--font-size-8);
     font-weight: 530;
   }
   ::v-deep h3 {
-    margin: $space-2 0;
-    font-size: $font-size-7;
+    margin: var(--space-2) 0;
+    font-size: var(--font-size-7);
     font-weight: 500;
   }
   ::v-deep p {
-    margin: $space-2 0;
-    font-size: $font-size-5;
+    margin: var(--space-2) 0;
+    font-size: var(--font-size-5);
   }
 }
 </style>

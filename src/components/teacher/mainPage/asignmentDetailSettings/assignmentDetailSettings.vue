@@ -59,8 +59,13 @@
         <SimpleInput
           caption="提出物タイトル"
           :value="settings.title ? settings.title : ''"
-          :error="titleErrors"
-          @change:value="handleTitleChange"
+          :maxlength="settings.title.length < 40 ? undefined : 50"
+          :error="
+            validationErrors.find(
+              (error) => error === 'タイトルの入力は必須です。'
+            )
+          "
+          @change="handleTitleChange"
         />
         <TipTapEditor
           caption="説明"
@@ -94,13 +99,15 @@
                 @change="handleSubmitOnHolidayChange"
               />
             </div>
-            <WeeklySelector
-              :isEachWeek="isEachWeek"
-              :weekValue="settings.cyclePeriod"
-              @change:week="handleCyclePeriodChange"
-              @changeEach:day="handleChangeEachDay"
-              @changeEach:week="handleChangeEachWeek"
-            />
+            <div style="text-align: center">
+              <WeeklySelector
+                :isEachWeek="isEachWeek"
+                :weekValue="settings.cyclePeriod"
+                @change="handleCyclePeriodChange"
+                @changeEach:day="handleChangeEachDay"
+                @changeEach:week="handleChangeEachWeek"
+              />
+            </div>
             <div class="detail-settings-preview-calender">
               <SimpleCalender
                 :highLights="settings.cyclePeriod"
@@ -150,12 +157,12 @@
             </p>
           </div>
         </Transition>
-        <div class="partition-bar" style="margin: 20px 0"></div>
+        <!-- <div class="partition-bar" style="margin: 20px 0"></div>
         <SimpleCheckbox
           :value="settings.delayedSubmission"
           label="遅れての提出を許可"
           @change="handleDelayedSubmittionChange"
-        />
+        /> -->
       </div>
     </div>
     <div class="general-settings">
@@ -174,7 +181,7 @@
               caption="提出物のステータス"
               :items="statuses"
               :value="settings.status"
-              @change:select="handleStatusChange"
+              @change="handleStatusChange"
             />
           </div>
           <div style="position: relative">
@@ -188,14 +195,14 @@
               multiple
               search
               :error="
-                validationErrors.filter(
+                validationErrors.find(
                   (error) =>
                     error === '最低でも1つのクラスを割り当てる必要があります。'
-                )[0]
+                )
               "
               @fieldChange="handleClassesComboboxFieldChange"
               @remove="handleClassesComboboxFieldRemove"
-              @change:select="handleClassesComboboxSelectChange"
+              @change="handleClassesComboboxSelectChange"
               @floatOpen="hnaldeClassesComboboxFloatOpen"
               @floatClose="hnaldeClassesComboboxFloatClose"
             />
@@ -243,7 +250,7 @@
                 :initialDatetime="releaseDateTemp"
                 :interval="24"
                 :inputValue="releaseDateInput"
-                @change:datetime="handleReleaseDateChange"
+                @change="handleReleaseDateChange"
               />
               <SimpleStack v-show="isReleseDateSet" distribution="right">
                 <SimpleButton plain @click="handleReleaseDateCancel">
@@ -265,36 +272,42 @@
             :disabled="settings.isRepeat"
             :inputValue="deadlineDateInput"
             :error="
-              validationErrors.filter(
+              validationErrors.find(
                 (error) => error === '提出日を設定してください。'
-              )[0]
+              )
             "
-            @change:date="handleDeadlineDateChange"
+            @change="handleDeadlineDateChange"
           />
           <SimpleTimePicker
             caption="締め切り時刻"
             :initialTime="settings.deadline"
             :inputValue="deadlineTimeInput"
             :error="
-              validationErrors.filter(
+              validationErrors.find(
                 (error) =>
                   error === '締め切り時刻を指定してください。' ||
                   error === '締め切りは未来の時間である必要があります。'
-              )[0]
+              )
             "
-            @change:time="handleDeadlineTimeChange"
+            @change="handleDeadlineTimeChange"
           />
           <div style="text-align: left; margin: 0.25rem 0">
             <SimpleSelector
               caption="提出方法"
               :value="settings.submissionMethod"
-              :items="submissionMethods.map((el) => ({ value: el, label: el }))"
+              :items="[
+                ...submissionMethods.map((data) => ({
+                  value: data,
+                  label: data,
+                })),
+                { value: 'other', label: 'その他' },
+              ]"
               :error="
-                validationErrors.filter(
+                validationErrors.find(
                   (error) => error === '提出方法が設定されていません。'
-                )[0]
+                )
               "
-              @change:select="handleSubmitMethodChange"
+              @change="handleSubmitMethodChange"
             />
           </div>
           <SimpleInput
@@ -303,11 +316,11 @@
             placeholder="提出方法"
             :value="settings.otherSubmissionMethod"
             :error="
-              validationErrors.filter(
+              validationErrors.find(
                 (error) => error === 'その他の提出方法を入力してください。'
-              )[0]
+              )
             "
-            @change:value="handleOtherSubmitMethodChange"
+            @change="handleOtherSubmitMethodChange"
           />
         </div>
       </SimpleCard>
@@ -315,7 +328,7 @@
   </div>
 </template>
 <script lang="ts">
-import { computed, defineComponent, PropType } from '@vue/composition-api';
+import { defineComponent, PropType } from '@vue/composition-api';
 import router from '@/router';
 import AssignmentDetailSettingsSkelton from './AssignmentDetailSettingsSkelton.vue';
 import {
@@ -397,7 +410,6 @@ export default defineComponent({
     const stringToDate = (holidays: [string, string][]) => {
       return holidays.map((holiday) => [new Date(holiday[0]), holiday[1]]);
     };
-
     const {
       settings,
       statuses,
@@ -428,10 +440,9 @@ export default defineComponent({
       studentPreviewErrors,
       onSaveErrors,
       validationErrors,
-      titleLengthError,
     } = useAssignmentDetailSettings(
       props.initialValue,
-      props.submissionMethods[0],
+      props.submissionMethods,
       store
     );
     const handlePreviousPage = () => {
@@ -511,14 +522,6 @@ export default defineComponent({
     const handleTitleChange = (newValue: string) => {
       settings.title = newValue;
     };
-    const titleErrors = computed(() => {
-      const emptyError = validationErrors.value.filter((error) => {
-        error === 'タイトルの入力は必須です。';
-      })[0];
-      if (emptyError) return emptyError;
-      else if (titleLengthError.value) return titleLengthError.value;
-      else return undefined;
-    });
     const handleDescriptionChange = (newValue: string) => {
       settings.description = newValue;
     };
@@ -567,7 +570,7 @@ export default defineComponent({
     };
 
     // general settings
-    const handleStatusChange = (newValue: 'draft' | 'active' | 'archived') => {
+    const handleStatusChange = (newValue: 'draft' | 'active') => {
       settings.status = newValue;
     };
     const handleClassesComboboxFieldChange = (newValue: string) => {
@@ -636,7 +639,6 @@ export default defineComponent({
       );
     };
     const handleSubmitMethodChange = (newValue: string) => {
-      console.log(newValue);
       settings.submissionMethod = newValue;
     };
     const handleOtherSubmitMethodChange = (newValue: string) => {
@@ -657,7 +659,6 @@ export default defineComponent({
       settings,
       validationErrors,
       stringToDate,
-      titleLengthError,
 
       // savebar
       handleOnSave,
@@ -685,7 +686,6 @@ export default defineComponent({
 
       // detail settings
       handleTitleChange,
-      titleErrors,
       handleDescriptionChange,
 
       // actions
@@ -734,9 +734,8 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .settings-page-container {
-  margin: $space-6;
+  margin: var(--space-6);
   display: grid;
   grid-template-rows: 100vh;
   grid-template-columns: 1fr 380px;
@@ -745,50 +744,50 @@ export default defineComponent({
   // "detail  "
 }
 .detail-settings-save-buttons {
-  margin-right: $space-4;
-  margin-bottom: $space-6;
+  margin-right: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 .valudation-banner {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid $border-error;
-  padding: $space-3 $space-2;
-  border-radius: $border-radius-1;
-  background: $surface-error-alpha;
-  margin-bottom: $space-6;
+  border: 1px solid var(--border-error);
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--border-radius-1);
+  background: var(--surface-error-alpha);
+  margin-bottom: var(--space-6);
 }
 .validation-error-header {
-  margin-left: $space-2;
+  margin-left: var(--space-2);
 }
 .validation-error-text {
   font-weight: 500;
   padding-top: 2px;
 }
 .validation-error-list {
-  margin: $space-2 0;
+  margin: var(--space-2) 0;
   list-style-type: disc;
 }
 .detail-settings-container {
-  padding-top: $space-5;
+  padding-top: var(--space-5);
   grid-area: detail;
   text-align: left;
 }
 .detail-settings {
   max-width: 80%;
-  margin: $space-5 auto;
+  margin: var(--space-5) auto;
 }
 
 // cycle period
 .cycle-period-container {
-  margin: $space-4 0;
-  border-top: 1px solid $surface-black;
+  margin: var(--space-4) 0;
+  border-top: 1px solid var(--surface-black);
 }
 .submit-on-holiday-checkbox-container {
-  margin-left: $space-1;
+  margin-left: var(--space-1);
 }
 .detail-settings-preview-calender {
   text-align: center;
-  margin-bottom: $space-4;
+  margin-bottom: var(--space-4);
 }
 .cylcle-period-sammary {
   width: 100%;
@@ -803,10 +802,10 @@ export default defineComponent({
   flex-wrap: nowrap;
 }
 .cylcle-period-sammary-badges {
-  margin: $space-2;
+  margin: var(--space-2);
 }
 .holiday-submit-status {
-  margin-left: $space-3;
+  margin-left: var(--space-3);
 }
 .badges-enter-active,
 .badges-leave-active {
@@ -826,21 +825,24 @@ export default defineComponent({
 }
 
 .general-settings {
-  padding-top: $space-5;
+  padding-top: var(--space-5);
   grid-area: general;
 }
 .general-settings-card {
-  padding: $space-4 $space-10 0 $space-10;
+  padding: var(--space-4) var(--space-10) 0 var(--space-10);
 }
 .assign-classes-badges {
-  margin: $space-1;
+  margin: var(--space-1);
 }
 .assign-classes-badges-container {
-  padding-top: $space-2;
+  padding-top: var(--space-2);
   text-align: left;
 }
 .partition-bar {
-  @extend %partition-bar;
+  box-sizing: border-box;
+  height: 1px;
+  border: 0.5px solid var(--border);
+  margin: 10px 0;
 }
 .classes-leave-active {
   position: absolute;

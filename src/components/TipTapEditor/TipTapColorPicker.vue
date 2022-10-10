@@ -88,22 +88,21 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .tiptap-editor-color-picker-float-box {
   position: absolute;
   display: inline-flex;
-  padding: $space-2;
-  border-radius: $border-radius-1;
-  background: $surface;
+  padding: var(--space-2);
+  border-radius: var(--border-radius-1);
+  background: var(--surface);
   margin-top: 35px;
   transform: translate(calc(-9px - 50%));
-  box-shadow: $box-shadow-1;
+  box-shadow: var(--box-shadow-1);
   cursor: auto;
 }
 .tiptap-editor-color-picker-float-box::before {
   content: '';
   border: 5px solid transparent;
-  border-bottom: 5px solid $surface;
+  border-bottom: 5px solid var(--surface);
   position: absolute;
   top: -10px;
   left: 50%;
@@ -112,12 +111,12 @@ export default defineComponent({
 .tiptap-editor-color-picker-sample {
   width: 24px;
   height: 24px;
-  margin: $space-1 $space-1;
+  margin: var(--space-1) var(--space-1);
   border-radius: 50%;
   cursor: pointer;
 }
 .tiptap-editor-color-picker-sample-is-active {
-  border: 2px solid $selected;
+  border: 2px solid var(--selected);
 }
 .red {
   background: #ff2600;
@@ -140,7 +139,7 @@ export default defineComponent({
   box-shadow: inset 20px 20px 60px #d95a00, inset -20px -20px 60px #ff7a00;
 }
 .unset {
-  border: 0.1px solid $surface-black;
+  border: 0.1px solid var(--surface-black);
   background: linear-gradient(
     45deg,
     #fff,

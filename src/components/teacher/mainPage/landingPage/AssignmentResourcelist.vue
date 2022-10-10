@@ -55,43 +55,37 @@
       </template>
       <template #data="render">
         <ResourceItem>
-          <component :is="render.item.title ? 'span' : 'SimpleSkelton'">
+          <component :is="render.item.title ? 'span' : 'SimpleSkeleton'">
             ICON
           </component>
         </ResourceItem>
         <ResourceItem distribution="left">
           <component
-            :is="render.item.title ? 'span' : 'SimpleSkelton'"
-            body
-            width="200px"
-            height="10px"
+            :is="render.item.title ? 'span' : 'SimpleSkeleton'"
+            type="text"
           >
             {{ render.item.title }}
           </component>
         </ResourceItem>
         <ResourceItem>
           <component
-            :is="render.item.deadline ? 'span' : 'SimpleSkelton'"
-            body
-            width="50%"
-            height="10px"
+            :is="render.item.deadline ? 'span' : 'SimpleSkeleton'"
+            type="text"
           >
             {{ format(new Date(), 'MM月dd日') }}
           </component>
         </ResourceItem>
         <ResourceItem>
           <component
-            :is="render.item.status ? 'SimpleTag' : 'SimpleSkelton'"
+            :is="render.item.status ? 'SimpleTag' : 'SimpleSkeleton'"
             :processing="render.item.status === 'active'"
             :success="render.item.status === 'draft'"
             :warn="render.item.status === 'closed'"
             :remove="false"
-            body
-            width="50%"
-            height="10px"
+            type="text"
           >
             <span style="font-size: 0.825rem">{{
-              status(render.item.status)
+              statusTranslate(render.item.status, render.item.deadline)
             }}</span>
           </component>
         </ResourceItem>
@@ -154,7 +148,7 @@
           radio
           :items="exportMethods"
           :value="exportMethodSelect"
-          @change:select="exportMethodSelectChange"
+          @change="exportMethodSelectChange"
         />
       </div>
     </SimpleModal>
@@ -169,7 +163,7 @@ import {
   SimpleResourceList,
   ResourceItem,
   SimplePagination,
-  SimpleSkelton,
+  SimpleSkeleton,
   SimpleIcon,
   SimpleTag,
   SimplePopover,
@@ -177,14 +171,20 @@ import {
   SimpleSelector,
 } from '@simple-education-dev/components';
 import { GabbageBox } from '@simple-education-dev/icons';
-import { format } from 'date-fns';
+import { format, isPast } from 'date-fns';
 import router from '@/router';
 
-export interface ResourceListAssignments {
+export interface ResourceListAssignment {
   id: number;
   title: string;
   deadline: Date;
+  status: 'active' | 'draft';
 }
+export const statusTranslate = (str: string, deadline: Date) => {
+  if (isPast(deadline)) return '締切済み';
+  if (str === 'draft') return '下書き';
+  else if (str === 'active') return 'アクティブ';
+};
 
 export default defineComponent({
   components: {
@@ -194,7 +194,7 @@ export default defineComponent({
     SimpleResourceList,
     ResourceItem,
     SimplePagination,
-    SimpleSkelton,
+    SimpleSkeleton,
     SimpleIcon,
     SimpleTag,
     SimplePopover,
@@ -207,7 +207,7 @@ export default defineComponent({
       default: true,
     },
     assignments: {
-      type: Array as PropType<ResourceListAssignments[]>,
+      type: Array as PropType<ResourceListAssignment[]>,
       required: true,
     },
   },
@@ -256,12 +256,6 @@ export default defineComponent({
       exportMethodSelect.value = newValue;
     };
 
-    // status translate
-    const status = (str: string) => {
-      if (str === 'draft') return '下書き';
-      else if (str === 'active') return 'アクティブ';
-    };
-
     // resource list logics
     const resourceListSelected = ref<number[]>([]);
     const handleResourceListChange = (newArray: number[]) => {
@@ -287,7 +281,8 @@ export default defineComponent({
       popoverMenuOpen.value = null;
     };
     const onClickRow = (index: number) => {
-      if (!props.loading) {
+      console.log(props.assignments[index]);
+      if (props.assignments[index].status === 'active') {
         router.push({
           name: 'submissionStatus',
           params: {
@@ -295,6 +290,8 @@ export default defineComponent({
             previous: 'teacherLanding',
           },
         });
+      } else if (props.assignments[index].status === 'draft') {
+        handleTransitionDetailSettings(props.assignments[index].id);
       }
     };
 
@@ -336,7 +333,7 @@ export default defineComponent({
       exportMethods,
       exportMethodSelect,
       exportMethodSelectChange,
-      status,
+      statusTranslate,
       resourceListSelected,
       handleResourceListChange,
       handleTransitionDetailSettings,
@@ -361,30 +358,29 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .assignments-resource-list-header {
-  padding: $space-3;
+  padding: var(--space-3);
 }
 .assignments-resource-list-title {
-  margin-right: $space-2;
-  font-size: $font-size-8;
+  margin-right: var(--space-2);
+  font-size: var(--font-size-8);
 }
 .other-operation-actions-container {
   display: inline-block;
   width: max-content;
-  padding: $space-1;
+  padding: var(--space-1);
 }
 .other-operation-action {
   $action-height: 35px;
   height: $action-height;
   line-height: $action-height;
-  padding: 0 $space-8;
-  font-size: $font-size-3;
+  padding: 0 var(--space-8);
+  font-size: var(--font-size-3);
 }
 .other-operation-action:hover {
-  background: $hovered;
+  background: var(--hovered);
 }
 .to-gabbage-text {
-  color: $text-error;
+  color: var(--text-error);
 }
 </style>

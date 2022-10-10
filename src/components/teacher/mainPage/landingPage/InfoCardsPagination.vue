@@ -99,7 +99,6 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .simple-pagination_container {
   width: 100%;
 }
@@ -107,13 +106,13 @@ export default defineComponent({
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  border: 0.1px solid $surface-black;
+  border: 0.1px solid var(--text);
   cursor: pointer;
 }
 .selected {
-  background: $selected;
+  background: var(--selected);
 }
 .intermediateSelected {
-  fill: $selected;
+  fill: var(--selected);
 }
 </style>

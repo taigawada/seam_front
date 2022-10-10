@@ -4,16 +4,25 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent } from '@vue/composition-api';
-export default defineComponent({});
+import { defineComponent, watch } from '@vue/composition-api';
+import { usePreferredDark } from '@vueuse/core';
+export default defineComponent({
+  setup(_, context) {
+    const isDark = usePreferredDark();
+    watch(isDark, () => {
+      // @ts-ignore
+      context.root.$switchTheme(isDark.value ? 'dark' : 'light');
+    });
+  },
+});
 </script>
 <style lang="scss">
 body {
-  background-color: #f4f8f9;
+  background-color: var(--global-background);
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   text-align: center;
-  color: #2c3e50;
+  color: var(--text);
 }
 </style>

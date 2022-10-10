@@ -9,22 +9,16 @@ import {
   getMinutes,
 } from 'date-fns';
 import { Holidays, useHolidays } from '@/store/modules/getHolidays';
+import SimpleDate from '@/utilities/SimpleDate';
 
 export interface CyclePeriod {
   weekIndex: number;
   dayOfWeekIndex: number;
 }
-export const nowDateInJST = new Date(
-  Date.now() + (new Date().getTimezoneOffset() + 9 * 60) * 60 * 1000
-);
-export const isPast = (date: Date) => date.getTime() < nowDateInJST.getTime();
 const dateToToCycle = (date: Date) => ({
   weekIndex: differenceInWeeks(date, startOfMonth(date)),
   dayOfWeekIndex: getDay(date),
 });
-export const isTomorrow = (date: Date) =>
-  isSameDay(addDays(nowDateInJST, 1), date);
-
 export const useRemainingDays = async (
   cyclePeriod: CyclePeriod[],
   deadlineTime: Date,
@@ -42,7 +36,7 @@ export const useRemainingDays = async (
         cycle.weekIndex === dateToToCycle(date).weekIndex &&
         cycle.dayOfWeekIndex === dateToToCycle(date).dayOfWeekIndex
     ) !== -1;
-  let currentDate = set(nowDateInJST, {
+  let currentDate = set(SimpleDate.now(), {
     hours: getHours(deadlineTime),
     minutes: getMinutes(deadlineTime),
     seconds: 0,
@@ -51,7 +45,7 @@ export const useRemainingDays = async (
   while (
     !isInclude(currentDate) ||
     isHoliday(currentDate) ||
-    isPast(currentDate)
+    SimpleDate.isPast(currentDate)
   ) {
     currentDate = addDays(currentDate, 1);
   }

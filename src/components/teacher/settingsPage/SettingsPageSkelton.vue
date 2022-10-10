@@ -1,20 +1,25 @@
 <template>
   <div style="text-align: left">
-    <SimpleSkelton heading width="30%" height="20px" />
-    <SimpleSkelton body width="100%" height="20px" />
+    <SimpleSkeleton
+      style="margin: var(--space-4) 0"
+      :size="{ width: '30%', height: '30px' }"
+      distribution="left"
+    />
+    <SimpleSkeleton
+      :size="{ width: '80%', height: '20px' }"
+      distribution="left"
+    />
 
-    <SimpleSkelton text :line="6"></SimpleSkelton>
+    <SimpleSkeleton type="text" :lines="6"></SimpleSkeleton>
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
-import { SimpleSkelton } from '@simple-education-dev/components';
+import { SimpleSkeleton } from '@simple-education-dev/components';
 export default defineComponent({
   components: {
-    SimpleSkelton,
+    SimpleSkeleton,
   },
 });
 </script>
-<style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
-</style>
+<style scoped lang="scss"></style>

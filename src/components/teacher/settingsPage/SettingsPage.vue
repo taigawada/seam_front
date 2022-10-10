@@ -77,7 +77,7 @@ import {
   SimpleModal,
 } from '@simple-education-dev/components';
 import { useScroll, useWindowScroll, useWindowSize } from '@vueuse/core';
-import _ from 'lodash';
+import _, { isError } from 'lodash';
 
 import store from '@/store';
 import SettingsPageSkelton from './SettingsPageSkelton.vue';
@@ -110,11 +110,15 @@ export default defineComponent({
     });
     const initialSettings = ref<UserSettings | null>(null);
     (async () => {
-      const teacherId = 1234;
+      const teacherId = store.getters.teacherId as number;
       const result = await SeamApiTeacher.getUserSettings(teacherId);
-      settings.submissionMethods = result.data.submissionMethods;
-      initialSettings.value = { ...settings };
-      isLoading.value = false;
+      if (!isError(result) && Object.keys(result.data).length) {
+        settings.submissionMethods = result.data.submissionMethods;
+        initialSettings.value = { ...settings };
+        isLoading.value = false;
+      } else {
+        /* エラーハンドリング */
+      }
     })();
     const handleSettingsChange = (newSettings: string[]) => {
       settings.submissionMethods = newSettings;
@@ -218,9 +222,8 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .settings-page-container {
-  margin: 0 $space-6 $space-6 $space-6;
+  margin: 0 var(--space-6) var(--space-6) var(--space-6);
   display: grid;
   grid-template-rows: 100vh;
   grid-template-columns: 320px 1fr;
@@ -239,9 +242,9 @@ export default defineComponent({
 }
 .description-container {
   text-align: left;
-  font-size: $font-size-7;
+  font-size: var(--font-size-7);
   & p {
-    font-size: $font-size-3;
+    font-size: var(--font-size-3);
   }
 }
 .settings-menu {
@@ -250,7 +253,7 @@ export default defineComponent({
   display: inline-flex;
   flex-flow: column;
   align-items: baseline;
-  padding: $space-4 $space-16;
+  padding: var(--space-4) var(--space-16);
   height: 100vh;
   box-shadow: 32px 0 30px -30px rgba(15, 26, 38, 0.08);
   box-sizing: border-box;
@@ -260,8 +263,7 @@ export default defineComponent({
   display: inline-block;
   width: 100%;
   text-align: left;
-  color: $surface-black;
-  font-size: $font-size-5;
+  font-size: var(--font-size-5);
   text-decoration: none;
   margin: 20px 0;
   cursor: pointer;
@@ -271,11 +273,11 @@ export default defineComponent({
   position: absolute;
   width: 3px;
   height: 150%;
-  right: -$space-16;
+  right: calc(var(--space-16) * -1);
   top: 50%;
   transform: translateY(-50%);
-  border-radius: $border-radius-05;
-  background: orange; //var(--is-current-menu);
+  border-radius: var(--border-radius-05);
+  background: orange;
   transition: background 0.2s;
 }
 </style>

@@ -1,10 +1,22 @@
 import axios, { AxiosPromise, AxiosRequestConfig, CancelToken } from 'axios';
-import { AssignmentList } from '@/components/student/StudentLanding.vue';
-import { ResourceListAssignments } from '@/components/teacher/mainPage/landingPage/AssignmentResourcelist.vue';
-import { AssignmentAllResourcelist } from '@/components/teacher/mainPage/assignmentsList/AssignmentsList.vue';
-import { AssignmentStatus } from '@/components/teacher/mainPage/submissionStatus/StatusResourcelist.vue';
-import { UserSettings } from '@/components/teacher/settingsPage/SettingsPage.vue';
 
+import { AssignmentList } from '../components/student/StudentLanding.vue';
+import { ResourceListAssignment } from '../components/teacher/mainPage/landingPage/AssignmentResourcelist.vue';
+import { AssignmentAllResourcelist } from '../components/teacher/mainPage/assignmentsList/AssignmentsList.vue';
+import { AssignmentStatus } from '../components/teacher/mainPage/submissionStatus/StatusResourcelist.vue';
+import { UserSettings } from '../components/teacher/settingsPage/SettingsPage.vue';
+import { CyclePeriod } from '@/AssignmentsType';
+
+interface StudentAssignment {
+  title: string;
+  descriptionHTML: string;
+  deadline: Date;
+  isRepeat: boolean;
+  cyclePeriod: CyclePeriod[];
+  submitOnHoliday: boolean;
+}
+
+type EmptyObject = { [key: string]: never };
 const BASE_URL = '';
 const get = (
   path: string,
@@ -25,12 +37,47 @@ const post = (path: string, jsonString?: string): AxiosRequestConfig => ({
   data: jsonString,
 });
 
+// error handler
+axios.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  function (error) {
+    switch (error.response?.status) {
+      case 401:
+        console.log('401エラー');
+        return new Error('');
+      case 403:
+        return;
+      default:
+        return;
+    }
+  }
+);
+
 export class SeamApiStudent {
+  static getStudentId(): AxiosPromise<string> {
+    return axios(get('/seam/student/getid'));
+  }
   static getAllAssignments(studentId: number): AxiosPromise<AssignmentList[]> {
     return axios(get(`/seam/student/assigned/${studentId}`));
   }
+  static getAssignments(
+    assignmentId: number,
+    studentId: number
+  ): AxiosPromise<StudentAssignment> {
+    return axios(
+      get(`/seam/student/assignments/${assignmentId}`, {
+        studentId: studentId,
+      })
+    );
+  }
 }
 export class SeamApiTeacher {
+  // get teacherId
+  static getTeacherId(): AxiosPromise<string> {
+    return axios(get('/seam/teacher/getid'));
+  }
   // user settings
   static getSubmissionMethods(teacherId: number): AxiosPromise<string[]> {
     return axios(get(`/seam/teacher/settings/submission-methods/${teacherId}`));
@@ -38,7 +85,7 @@ export class SeamApiTeacher {
   // at mainPage
   static getAssignments(
     teacherId: number
-  ): AxiosPromise<ResourceListAssignments[]> {
+  ): AxiosPromise<ResourceListAssignment[]> {
     return axios(get(`/seam/teacher/assignments/${teacherId}`));
   }
   // at assignmentsList
@@ -54,13 +101,13 @@ export class SeamApiTeacher {
   // at mainPage edit
   static getAssignment(
     assignmentId: number
-  ): AxiosPromise<ResourceListAssignments> {
+  ): AxiosPromise<ResourceListAssignment | EmptyObject> {
     return axios(get(`/seam/teacher/assignments/get/${assignmentId}`));
   }
   // at mainPage delete
   static deleteAssignment(
     assignmentIds: number[]
-  ): AxiosPromise<ResourceListAssignments[]> {
+  ): AxiosPromise<ResourceListAssignment[]> {
     const params = new URLSearchParams();
     assignmentIds.map((assignmentId) =>
       params.append('assignmentId', String(assignmentId))
@@ -84,7 +131,9 @@ export class SeamApiTeacher {
     return axios(get(`/seam/teacher/assignments/status/${assignmentId}`));
   }
   // at settings
-  static getUserSettings(teacherId: number): AxiosPromise<UserSettings> {
+  static getUserSettings(
+    teacherId: number
+  ): AxiosPromise<UserSettings | EmptyObject> {
     return axios(get(`/seam/teacher/settings/${teacherId}`));
   }
 }

@@ -12,6 +12,7 @@
   </div>
 </template>
 <script lang="ts">
+import router from '@/router';
 import { defineComponent, PropType } from '@vue/composition-api';
 import { AssignmentList } from '../StudentLanding.vue';
 import StudentResourceCard from './StudentResourceCard.vue';
@@ -29,7 +30,10 @@ export default defineComponent({
   },
   setup() {
     const handleTransitionToAssignmentDetail = (assignmentId: number) => {
-      console.log(assignmentId);
+      router.push({
+        name: 'asiignmentDetailStudent',
+        params: { assignmentId: String(assignmentId) },
+      });
     };
     return {
       handleTransitionToAssignmentDetail,
@@ -38,12 +42,11 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .student-main-page {
-  margin: $space-10;
+  margin: var(--space-10);
 }
 .student-main-page-title {
   text-align: left;
-  font-size: $font-size-8;
+  font-size: var(--font-size-8);
 }
 </style>

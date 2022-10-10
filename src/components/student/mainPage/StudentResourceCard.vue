@@ -4,7 +4,7 @@
     <div class="student-resource-card-infomations">
       <div class="student-resource-card-title">{{ title }}</div>
       <div class="student-resource-card-sub-info">
-        {{ author }} {{ $t('deadline') }}:{{ formatDateInTranslate(deadline) }}
+        {{ $t('deadline') }}:{{ formatDateInTranslate(deadline) }}
       </div>
     </div>
     <div
@@ -19,11 +19,7 @@
 import { computed, defineComponent } from '@vue/composition-api';
 import { isSameDay, format } from 'date-fns';
 import { useI18n } from 'vue-i18n-bridge';
-import {
-  nowDateInJST,
-  isPast,
-  isTomorrow,
-} from '../compositions/useRemainingDays';
+import SimpleDate from '@/utilities/SimpleDate';
 
 export default defineComponent({
   props: {
@@ -35,30 +31,26 @@ export default defineComponent({
       type: Date,
       required: true,
     },
-    author: {
-      type: String,
-      required: true,
-    },
   },
   setup(props, context) {
     const { t } = useI18n();
     const deadlineNotification = computed(() => {
-      if (isPast(props.deadline)) {
+      if (SimpleDate.isPast(props.deadline)) {
         return t('overdue');
-      } else if (isSameDay(props.deadline, nowDateInJST)) {
+      } else if (isSameDay(props.deadline, SimpleDate.now())) {
         return t('untilToday');
-      } else if (isTomorrow(props.deadline)) {
+      } else if (SimpleDate.isTomorrow(props.deadline)) {
         return t('untilTomorrow');
       } else {
         return '';
       }
     });
     const deadlineNotificationColor = computed(() => {
-      if (isPast(props.deadline)) {
+      if (SimpleDate.isPast(props.deadline)) {
         return { color: 'rgba(196, 0, 0, 1)' };
-      } else if (isSameDay(props.deadline, nowDateInJST)) {
+      } else if (isSameDay(props.deadline, SimpleDate.now())) {
         return { color: 'rgba(60, 130, 214, 1)' };
-      } else if (isTomorrow(props.deadline)) {
+      } else if (SimpleDate.isTomorrow(props.deadline)) {
         return { color: 'rgba(60, 130, 214, 1)' };
       } else {
         return '';
@@ -85,42 +77,41 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .student-resource-card {
   display: flex;
   align-items: center;
   justify-content: left;
   position: relative;
-  margin: $space-2 0;
+  margin: var(--space-2) 0;
   width: 100%;
   height: 80px;
-  border-radius: $border-radius-1;
-  background: $surface;
-  box-shadow: $box-shadow-1;
+  border-radius: var(--border-radius-1);
+  background: var(--surface);
+  box-shadow: var(--box-shadow-1);
   cursor: pointer;
 }
 .student-resource-card:hover {
-  background: $hovered;
+  background: var(--hovered);
 }
 .student-resource-card-icon {
-  margin: 0 0 0 $space-4;
+  margin: 0 0 0 var(--space-4);
 }
 
 .student-resource-card-infomations {
   display: inline-block;
   text-align: left;
   flex: 1;
-  margin: 0 0 0 $space-4;
+  margin: 0 0 0 var(--space-4);
 }
 .student-resource-card-title {
-  font-size: $font-size-7;
+  font-size: var(--font-size-7);
 }
 .student-resource-card-sub-info {
-  font-size: $font-size-4;
+  font-size: var(--font-size-4);
 }
 .student-resource-card-deadline-notification {
-  font-size: $font-size-6;
-  color: $text-error;
-  margin: 0 $space-4 0 0;
+  font-size: var(--font-size-6);
+  color: var(--text-error);
+  margin: 0 var(--space-4) 0 0;
 }
 </style>

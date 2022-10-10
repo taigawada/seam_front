@@ -29,40 +29,34 @@
     </template>
     <template #data="render">
       <ResourceItem>
-        <component :is="render.item.title ? 'span' : 'SimpleSkelton'">
+        <component :is="render.item.title ? 'span' : 'SimpleSkeleton'">
           ICON
         </component>
       </ResourceItem>
       <ResourceItem distribution="left">
         <component
-          :is="render.item.title ? 'span' : 'SimpleSkelton'"
-          body
-          width="200px"
-          height="10px"
+          :is="render.item.title ? 'span' : 'SimpleSkeleton'"
+          type="text"
         >
           {{ render.item.title }}
         </component>
       </ResourceItem>
       <ResourceItem>
         <component
-          :is="render.item.deadline ? 'span' : 'SimpleSkelton'"
-          body
-          width="50%"
-          height="10px"
+          :is="render.item.deadline ? 'span' : 'SimpleSkeleton'"
+          type="text"
         >
           {{ format(new Date(), 'MM月dd日') }}
         </component>
       </ResourceItem>
       <ResourceItem>
         <component
-          :is="render.item.status ? 'SimpleTag' : 'SimpleSkelton'"
+          :is="render.item.status ? 'SimpleTag' : 'SimpleSkeleton'"
           :processing="render.item.status === 'active'"
           :success="render.item.status === 'draft'"
           :warn="render.item.status === 'closed'"
           :remove="false"
-          body
-          width="50%"
-          height="10px"
+          type="text"
         >
           <span style="font-size: 0.825rem">{{
             status(render.item.status)
@@ -112,7 +106,7 @@ import {
   ResourceItem,
   SimplePagination,
   SimpleTag,
-  SimpleSkelton,
+  SimpleSkeleton,
 } from '@simple-education-dev/components';
 import { GabbageBox } from '@simple-education-dev/icons';
 import router from '@/router';
@@ -124,7 +118,7 @@ export default defineComponent({
     SimpleResourceList,
     ResourceItem,
     SimplePagination,
-    SimpleSkelton,
+    SimpleSkeleton,
     SimpleTag,
   },
   props: {
@@ -132,7 +126,7 @@ export default defineComponent({
       type: Boolean,
     },
     resources: {
-      type: Array as PropType<{ id: unknown }[]>,
+      type: Array as PropType<{ id: number; status: string }[]>,
       required: true,
     },
   },
@@ -189,13 +183,17 @@ export default defineComponent({
       popoverMenuOpen.value = null;
     };
     const onClickRow = (index: number) => {
-      router.push({
-        name: 'submissionStatus',
-        params: {
-          assignmentId: String(props.resources[index].id),
-          previous: 'teacherLanding',
-        },
-      });
+      if (props.resources[index].status === 'active') {
+        router.push({
+          name: 'submissionStatus',
+          params: {
+            assignmentId: String(props.resources[index].id),
+            previous: 'assignmentsList',
+          },
+        });
+      } else if (props.resources[index].status === 'draft') {
+        handleTransitionDetailSettings(props.resources[index].id);
+      }
     };
 
     // delete warning modal
@@ -267,6 +265,4 @@ export default defineComponent({
   },
 });
 </script>
-<style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
-</style>
+<style scoped lang="scss"></style>

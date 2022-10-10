@@ -20,7 +20,6 @@
           @pointerdown="(event) => handleDragStart(index, event)"
         >
           <SimpleIcon
-            class="drag-icon dnd-handler"
             :style="{ cursor: isDragging ? 'grabbing' : 'grab' }"
             :source="DndHandler"
             size="20px"
@@ -29,13 +28,14 @@
         <SimpleInput
           ref="testRef"
           style="width: 90%"
+          :captionHidden="true"
           placeholder="値を空白にすることはできません。"
           :value="Array.isArray(methodInput) ? methodInput[0] : methodInput"
           :autofocus="
             index === settings.submissionMethods.length - 1 ? isFocus : false
           "
           @focusout="isFocus = false"
-          @change:value="(newValue) => handleMethodChange(newValue, index)"
+          @change="(newValue) => handleMethodChange(newValue, index)"
         />
         <SimpleIcon
           class="delete-icon"
@@ -60,7 +60,6 @@
         class="drag-icon-container"
       >
         <SimpleIcon
-          class="drag-icon dnd-handler"
           :style="{ cursor: isDragging ? 'grabbing' : 'grab' }"
           :source="DndHandler"
           size="20px"
@@ -69,13 +68,14 @@
 
       <SimpleInput
         style="width: 90%"
+        :captionHidden="true"
         placeholder="別の値を追加..."
         :value="newValue"
         @focusout="isFocus = false"
-        @change:value="handleNewValueChange"
+        @change="handleNewValueChange"
       />
       <SimpleIcon
-        class="delete-icon dummy"
+        class="delete-icon"
         :source="DeleteCross"
         style="opacity: 0; pointer-events: none"
         size="20px"
@@ -131,8 +131,7 @@ export default defineComponent({
           newString,
         ]);
         isFocus.value = true;
-        // 原因不明だが、直接 空文字を入力しようとすると反映されず、nextTickを2回噛ませることで回避
-        // 表示上問題ないが、パフォーマンス的にどうなのか
+        // 直接 空文字を入力しようとすると反映されず、nextTickを2回噛ませることで回避
         nextTick(() => {
           newValue.value = '_';
           nextTick(() => {
@@ -176,7 +175,7 @@ export default defineComponent({
     });
     const windowScroll = useWindowScroll(window);
     const offset = ref(0);
-    const chnageIndex = ref(0);
+    const changeIndex = ref(0);
     watch(mousePosition.y, () => {
       if (isDragging.value !== null) {
         const amount =
@@ -191,18 +190,18 @@ export default defineComponent({
           positionsArray.sort();
           const resultIndex = positionsArray.findIndex((top) => top === amount);
           if (resultIndex < props.settings.submissionMethods.length)
-            chnageIndex.value = resultIndex;
+            changeIndex.value = resultIndex;
         }
       } else {
         draggingElement.y = 0;
       }
     });
-    watch(chnageIndex, () => {
+    watch(changeIndex, () => {
       if (isDragging.value !== null) {
         const copyElement = props.settings.submissionMethods[isDragging.value];
         const copyArray = [...props.settings.submissionMethods];
         copyArray.splice(isDragging.value, 1);
-        isDragging.value = chnageIndex.value;
+        isDragging.value = changeIndex.value;
         copyArray.splice(isDragging.value, 0, copyElement);
         context.emit('change', copyArray);
       }
@@ -217,6 +216,7 @@ export default defineComponent({
       width: `${
         customSubmissionMethodsContainer.value?.getBoundingClientRect().width
       }px`,
+      'z-index': isDragging.value !== null ? '100' : '0',
     }));
     const cleanupfunc = ref<(() => void) | null>(null);
     const handleDragEnd = () => {
@@ -225,7 +225,6 @@ export default defineComponent({
         cleanupfunc.value();
         cleanupfunc.value = null;
       }
-      // methods.value = methods.value.flat();
       context.emit(
         'change',
         [...props.settings.submissionMethods].flat().filter((el) => el !== '')
@@ -235,7 +234,7 @@ export default defineComponent({
     const handleDragStart = (index: number, event: MouseEvent) => {
       isLocked.value = true;
       if (props.settings.submissionMethods[index] !== '') {
-        chnageIndex.value = index;
+        changeIndex.value = index;
         const cleanup = useEventListener(window, 'pointerup', () =>
           handleDragEnd()
         );
@@ -272,34 +271,27 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .custom-submission-methods-container {
   user-select: none;
   -webkit-user-select: none;
-  padding: $space-6 0;
+  padding: var(--space-6) 0;
 }
 .custom-submission-methods-elements {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
 }
 .hovered-fill-element {
-  background: $hovered;
-  border-radius: $border-radius-1;
-  padding-top: 19px;
-  height: 63px;
+  background: var(--hovered);
+  border-radius: var(--border-radius-1);
+  height: 70px;
   width: 100%;
 }
 .drag-icon-container {
-  height: 63px;
-  width: 30px;
-}
-.dnd-handler {
-  padding-top: 31px;
+  height: 20px;
 }
 .delete-icon {
-  padding-bottom: 12px;
-  padding-right: $space-2;
+  padding-right: var(--space-2);
 }
 </style>

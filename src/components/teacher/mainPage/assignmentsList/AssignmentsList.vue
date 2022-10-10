@@ -25,10 +25,11 @@
         <SimpleInput
           style="flex-grow: 1"
           placeholder="提出物を検索..."
+          captionHidden
           :value="querys.query"
           remove
           :icon="SearchGlass"
-          @change:value="handleSearchFieldChange"
+          @change="handleSearchFieldChange"
           @remove="handleSearchFieldRemove"
         />
         <div ref="sortOptionsRef" class="sort-options-activator">
@@ -47,7 +48,7 @@
                   :value="querys.order"
                   :items="sortMethods"
                   caption="並び替え"
-                  @change:select="handleSortMethodChange"
+                  @change="handleSortMethodChange"
                 />
               </div>
               <div class="order-select" @click="handleOrderChange('ASC')">
@@ -81,11 +82,7 @@
         </div>
       </div>
     </div>
-    <AssignmentResourcelist
-      style="margin-top: -20px"
-      :loading="isLoading"
-      :resources="resources"
-    />
+    <AssignmentResourcelist :loading="isLoading" :resources="resources" />
   </div>
 </template>
 <script lang="ts">
@@ -146,6 +143,7 @@ export default defineComponent({
     if (this.isLoading) {
       this.currentCancelToken?.cancel();
     }
+    console.log('aaa');
     this.search();
     next();
   },
@@ -215,7 +213,6 @@ export default defineComponent({
       currentCancelToken.value = source;
       isLoading.value = true;
       try {
-        console.log(URLparams.removeFalsy(querys));
         const result = await SeamApiTeacher.searchAssignments(
           teacherId,
           URLparams.removeFalsy(querys),
@@ -320,12 +317,11 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .assignment-list-container {
-  padding: 0 $space-6 $space-6 $space-6;
+  padding: 0 var(--space-6) var(--space-6) var(--space-6);
 }
 .submittion-status-header {
-  padding: $space-4 0;
+  padding: var(--space-4) 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -336,29 +332,29 @@ export default defineComponent({
   justify-content: flex-start;
 }
 .submittion-status-header-text {
-  font-size: $font-size-8;
-  margin-left: $space-4;
+  font-size: var(--font-size-8);
+  margin-left: var(--space-4);
 }
 .query-field-container {
   width: 100%;
-  background: rgb(245, 250, 255);
-  border-bottom-left-radius: $border-radius-1;
-  border-bottom-right-radius: $border-radius-1;
-  border-bottom: 20px solid rgb(245, 250, 255);
+  background: var(--surface);
+  border-bottom-left-radius: var(--border-radius-1);
+  border-bottom-right-radius: var(--border-radius-1);
+  margin-bottom: var(--space-2);
   .query-field {
     margin: 0 auto;
     width: 90%;
     display: flex;
-    align-items: flex-end;
-    padding: $space-2;
+    align-items: center;
+    padding: var(--space-4) 0;
   }
 }
 .status-tab-base {
   position: relative;
-  background: $surface;
+  background: var(--surface);
   padding-right: 70%;
-  border-top-left-radius: $border-radius-1;
-  border-top-right-radius: $border-radius-1;
+  border-top-left-radius: var(--border-radius-1);
+  border-top-right-radius: var(--border-radius-1);
   z-index: 0;
 }
 .status-tab-base::after {
@@ -369,25 +365,24 @@ export default defineComponent({
   width: 100%;
   height: 1px;
   display: block;
-  border-bottom: 1px solid $border;
+  border-bottom: 1px solid var(--border);
   z-index: -1;
 }
 .sort-options-activator {
-  margin-bottom: 10px;
   display: inline-flex;
 }
 .sort-options {
-  padding: $space-3;
+  padding: var(--space-3);
 }
 .sort-methods {
-  margin: 0 $space-4 $space-4 $space-2;
+  margin: 0 var(--space-4) var(--space-4) var(--space-2);
   text-align: left;
   width: 150px;
   height: 150px;
   overflow: scroll;
 }
 .order-select {
-  margin: $space-2 0;
+  margin: var(--space-2) 0;
   display: flex;
   align-items: center;
   justify-content: center;

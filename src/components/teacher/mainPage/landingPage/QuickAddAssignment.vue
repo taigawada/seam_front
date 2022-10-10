@@ -13,19 +13,20 @@
     <div class="quick-add-assigment-card-content">
       <SimpleInput
         :value="title"
+        :maxlength="title.length < 40 ? undefined : 50"
         caption="提出物タイトル"
-        @change:value="handleTitleChange"
+        @change="handleTitleChange"
       />
       <SimpleDateTimePicker
         caption="提出期限"
         :inputValue="deadlineInputValue"
-        @change:datetime="handleDeadlineChange"
+        @change="handleDeadlineChange"
       />
       <SimpleSelector
         caption="提出方法"
         :value="submitMethod"
         :items="methods"
-        @change:select="handleMethodChange"
+        @change="handleMethodChange"
       />
       <TipTapEditor
         caption="説明"
@@ -92,6 +93,7 @@ export default defineComponent({
         submitMethod: submitMethod.value,
       });
     };
+
     return {
       title,
       deadline,
@@ -110,12 +112,11 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .quick-add-assigment-card {
-  margin-top: $space-3;
+  margin-top: var(--space-3);
   text-align: left;
 }
 .quick-add-assigment-card-content {
-  padding: $space-10 $space-10 $space-5 $space-10;
+  padding: var(--space-10) var(--space-10) var(--space-5) var(--space-10);
 }
 </style>

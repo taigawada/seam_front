@@ -77,7 +77,7 @@ export default defineComponent({
     const isDisabled = ref(false);
     const isLoading = ref(false);
     const isFailed = ref(false);
-    const wait = (waitTime: number) =>
+    const sleep = (waitTime: number) =>
       new Promise((resolve) => setTimeout(resolve, waitTime));
     const buttonColor = computed(() => ({
       '--button-filled-color': props.isSubmitted
@@ -90,7 +90,7 @@ export default defineComponent({
     const handleMousedown = async () => {
       if (!isDisabled.value) {
         isDisabled.value = true;
-        await wait(400);
+        await sleep(400);
         isTextShow.value = true;
         isLoading.value = true;
         const actionFn = props.isSubmitted
@@ -102,7 +102,7 @@ export default defineComponent({
             resultIcon.value = CheckMark;
             isIconShow.value = true;
             isLoading.value = false;
-            await wait(1600);
+            await sleep(1600);
             isIconShow.value = false;
             isTextShow.value = false;
             isDisabled.value = false;
@@ -113,7 +113,7 @@ export default defineComponent({
             isIconShow.value = true;
             isFailed.value = true;
             isLoading.value = false;
-            await wait(1600);
+            await sleep(1600);
             isFailed.value = false;
             isTextShow.value = false;
             isIconShow.value = false;
@@ -136,7 +136,6 @@ export default defineComponent({
 });
 </script>
 <style lang="scss" scoped>
-@use '@simple-education-dev/tokens/styles' as *;
 $button-width: 300px;
 $button-height: 42px;
 $delay: 400ms;
@@ -156,7 +155,7 @@ $delay: 400ms;
   border-radius: 100vh;
   border: 1px solid var(--button-filled-color);
   text-decoration: none;
-  box-shadow: $box-shadow-1;
+  box-shadow: var(--box-shadow-1);
   box-sizing: border-box;
   overflow: hidden;
   cursor: pointer;
@@ -169,15 +168,15 @@ $delay: 400ms;
   transform: scale(1.04);
 }
 .submit-button--text {
-  font-size: $font-size-6;
-  padding: $space-4 $space-4;
+  font-size: var(--font-size-6);
+  padding: var(--space-4) var(--space-4);
   line-height: 40px;
   color: var(--button-filled-color);
   text-decoration: none;
   pointer-events: none;
 }
 .submit-button--text-hovered {
-  color: $text-white;
+  color: rgba(255, 255, 255, 1);
 }
 .submit-button-check-icon {
   position: absolute;
@@ -214,8 +213,8 @@ $delay: 400ms;
 }
 $spinner-size: 32px;
 $border-weight: 4px;
-$border-color: $primary;
-$border-color-alpha: $theme-color-alpha;
+$border-color: var(--primary);
+$border-color-alpha: var(--theme-color-alpha);
 .submit-button--spinner:after,
 .submit-button--spinner {
   color: #2c3e50;
@@ -229,9 +228,9 @@ $border-color-alpha: $theme-color-alpha;
   font-size: 10px;
   position: relative;
   text-indent: -9999em;
-  border-top: $border-weight solid $theme-color-alpha;
-  border-right: $border-weight solid $theme-color-alpha;
-  border-bottom: $border-weight solid $theme-color-alpha;
+  border-top: $border-weight solid var(--theme-color-alpha);
+  border-right: $border-weight solid var(--theme-color-alpha);
+  border-bottom: $border-weight solid var(--theme-color-alpha);
   border-left: $border-weight solid $border-color;
   transform: translateZ(0);
   animation: SpinnerRotateAnim 0.7s infinite linear;

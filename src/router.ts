@@ -6,6 +6,7 @@ import TeacherMainPage from './components/teacher/mainPage/MainPage.vue';
 import AssignmentsList from './components/teacher/mainPage/assignmentsList/AssignmentsList.vue';
 import AssignmentDetail from './components/teacher/mainPage/asignmentDetailSettings/AssignmentDetailSettingsIndex.vue';
 import SettingsPage from './components/teacher/settingsPage/SettingsPage.vue';
+import InitialSettingsPage from './components/teacher/initialSettingsPage/InitialSettingsPage.vue';
 
 import Student from './components/student/StudentLanding.vue';
 import AssignmentDetailPage from './components/student/assignmentDetailPage/AssignmentDetailPage.vue';
@@ -58,9 +59,19 @@ export default new Router({
       ],
     },
     {
-      path: '/stu',
+      path: '/initialSettings',
+      name: 'initialSettingsPage',
+      component: InitialSettingsPage,
+    },
+    {
+      path: '/student',
       name: 'student',
       component: Student,
+    },
+    {
+      path: '/student/assignments/:assignmentId',
+      name: 'asiignmentDetailStudent',
+      component: AssignmentDetailPage,
     },
     {
       path: '/student-preview',

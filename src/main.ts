@@ -4,6 +4,7 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 
+// routerとタブを同期
 router.afterEach((to) => {
   if (to.name === 'userSettings') {
     store.dispatch('teacherTabSelect', 1);
@@ -16,16 +17,9 @@ import VueCompositionApi from '@vue/composition-api';
 Vue.use(VueCompositionApi);
 import i18n from './components/student/i18n';
 Vue.use(i18n);
-
 import '@simple-education-dev/components/style';
-
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-
-library.add(fas);
-
-Vue.component('font-awesome-icon', FontAwesomeIcon);
+import { SimpleComponents } from '@simple-education-dev/components';
+Vue.use(SimpleComponents);
 
 import { worker } from './mock/apiMocks/browser';
 

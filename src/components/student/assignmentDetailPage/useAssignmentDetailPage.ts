@@ -1,58 +1,77 @@
-import {
-  reactive,
-  getCurrentInstance,
-  computed,
-  ref,
-} from '@vue/composition-api';
-// import { useStore } from '../../../store/useStore';
+import { reactive, computed, ref } from '@vue/composition-api';
 import { useI18n } from 'vue-i18n-bridge';
-import { format, isToday, isTomorrow } from 'date-fns';
+import { format } from 'date-fns';
 import {
   useRemainingDays,
   CyclePeriod,
 } from '../compositions/useRemainingDays';
+import SimpleDate from '@/utilities/SimpleDate';
+import router from '@/router';
+import { SeamApiStudent } from '@/api/endpoints';
+import { isError } from 'lodash';
+import store from '@/store';
 
-interface Assignment {
+export interface StudentAssignment {
   title: string;
   descriptionHTML: string;
   deadlineDate: Date | null;
   deadlineTime: Date | null;
-  submitOnHoliday: boolean;
 }
 
 export const useAssignmentDetailPage = () => {
-  const instance = getCurrentInstance();
   const { t } = useI18n();
-  const assignment = reactive<Assignment>({
+  const assignment = reactive<StudentAssignment>({
     title: '',
     descriptionHTML: '',
     deadlineDate: null,
     deadlineTime: null,
-    submitOnHoliday: false,
   });
   const isPreview = ref(false);
+  const isLoading = ref(true);
   (async () => {
-    if (Object.keys(instance?.proxy.$route.query as object).length > 0) {
+    const assignmentId = router.currentRoute.params.assignmentId;
+    console.log(assignmentId);
+    if (assignmentId !== undefined) {
+      const studentId: number = store.getters.studentId;
+
+      const result = await SeamApiStudent.getAssignments(
+        parseInt(assignmentId),
+        studentId
+      );
+      console.log(result.data);
+      if (!isError(result)) {
+        assignment.title = result.data.title;
+        assignment.deadlineDate = result.data.deadline;
+        assignment.deadlineTime = new Date(String(result.data.deadline));
+        if (result.data.isRepeat) {
+          assignment.deadlineDate = await useRemainingDays(
+            result.data.cyclePeriod,
+            result.data.deadline,
+            result.data.submitOnHoliday
+          );
+        } else {
+          assignment.deadlineDate = new Date(result.data.deadline);
+        }
+        assignment.descriptionHTML = result.data.descriptionHTML;
+        isLoading.value = false;
+      } else {
+        /* エラーハンドリング */
+      }
+    } else {
+      isLoading.value = false;
+      const query = router.currentRoute.query;
       isPreview.value = true;
-      assignment.title = String(instance?.proxy.$route.query.title);
-      assignment.descriptionHTML = String(
-        instance?.proxy.$route.query.descriptionHTM
-      );
-      assignment.deadlineTime = new Date(
-        String(instance?.proxy.$route.query.deadlineTime)
-      );
-      if (JSON.parse(String(instance?.proxy.$route.query.isRepeat))) {
+      assignment.title = String(query.title);
+      assignment.descriptionHTML = String(query.descriptionHTM);
+      assignment.deadlineTime = new Date(String(query.deadlineTime));
+      if (JSON.parse(String(query.isRepeat))) {
         assignment.deadlineDate = await useRemainingDays(
-          JSON.parse(
-            String(instance?.proxy.$route.query.cyclePeriod)
-          ) as CyclePeriod[],
+          JSON.parse(String(query.cyclePeriod)) as CyclePeriod[],
           assignment.deadlineTime,
-          JSON.parse(String(instance?.proxy.$route.query.submitOnHoliday))
+          JSON.parse(String(query.submitOnHoliday))
         );
       } else {
-        assignment.deadlineDate = new Date(
-          String(instance?.proxy.$route.query.deadlineDate)
-        );
+        assignment.deadlineDate = new Date(String(query.deadlineDate));
       }
     }
   })();
@@ -68,8 +87,9 @@ export const useAssignmentDetailPage = () => {
   const deadline = computed(() => {
     const date = () => {
       if (assignment.deadlineDate) {
-        if (isToday(assignment.deadlineDate)) return t('today');
-        if (isTomorrow(assignment.deadlineDate)) return t('tommorow');
+        if (SimpleDate.isToday(assignment.deadlineDate)) return t('today');
+        if (SimpleDate.isTomorrow(assignment.deadlineDate))
+          return t('tommorow');
         return formatDayInTranslate(assignment.deadlineDate);
       } else return '';
     };
@@ -82,5 +102,12 @@ export const useAssignmentDetailPage = () => {
   });
   const isSubmitted = ref(false);
   const submittedDate = ref('');
-  return { isPreview, assignment, deadline, isSubmitted, submittedDate };
+  return {
+    isPreview,
+    isLoading,
+    assignment,
+    deadline,
+    isSubmitted,
+    submittedDate,
+  };
 };

@@ -1,10 +1,10 @@
 {
   "assignmentsList": "提出物一覧",
-  "back": "戻る",
-  "overdue": "期限を超過",
+  "back": "もどる",
+  "overdue": "期限を過ぎました",
   "untilToday": "今日まで",
   "untilTomorrow": "明日まで",
-  "selfSubmitCheck": "提出物の完了をチェック",
+  "selfSubmitCheck": "提出物の完りょうをチェック",
   "submittedIn": "に提出しました。",
   "submitCancel": "取り消し",
   "deadline": "提出期限",

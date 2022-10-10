@@ -1,26 +1,35 @@
 <template>
   <div class="student-main-page">
     <div class="student-main-page-title">{{ $t('assignmentsList') }}</div>
-    <SimpleSkelton body width="100%" height="80px" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
+    <SimpleSkeleton plain width="100%" height="80px" style="margin: 4px 0" />
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
-import { SimpleSkelton } from '@simple-education-dev/components';
+import { SimpleSkeleton } from '@simple-education-dev/components';
 
 export default defineComponent({
   components: {
-    SimpleSkelton,
+    SimpleSkeleton,
   },
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .student-main-page {
-  margin: $space-10;
+  margin: var(--space-10);
 }
 .student-main-page-title {
   text-align: left;
-  font-size: $font-size-8;
+  font-size: var(--font-size-8);
 }
 </style>

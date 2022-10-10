@@ -16,17 +16,17 @@ export default class JSONDecoder {
   /**
    * オブジェクト、またはオブジェクトの配列を引数に取り、ISO8601形式のStringをDateに変換します。
    * @param target
-   * @returns {} 変換したオブジェクト、またはオブジェクトの配列
+   * @returns 変換したオブジェクト、またはオブジェクトの配列
    */
-  static dateParse(target: object | Array<object>) {
+  static dateParse<T>(target: object | Array<object>) {
     if (Array.isArray(target)) {
       target.map((targetObject) => {
         return this.objectDateParse(targetObject);
       });
-      return target;
+      return target as unknown as T;
     } else {
       this.objectDateParse(target);
-      return target;
+      return target as unknown as T;
     }
   }
 }

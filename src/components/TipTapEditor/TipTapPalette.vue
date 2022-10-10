@@ -92,11 +92,11 @@
       title="リンクを挿入"
       :mainAction="{
         text: '挿入',
-        onAction: () => handleLink,
+        onAction: handleLink,
       }"
       :subAction="{
         text: 'キャンセル',
-        onAction: () => handleUrlModalDestroy,
+        onAction: handleUrlModalDestroy,
       }"
       @destroy="handleUrlModalDestroy"
       @mainAction="handleLink"
@@ -108,13 +108,13 @@
           caption="URL"
           placeholder="https://"
           :value="urlInput"
-          @change:value="handleUrlInputChange"
+          @change="handleUrlInputChange"
         />
         <SimpleSelector
           :value="urlTarget"
           :items="urlTargets"
           caption="リンクの開き方"
-          @change:select="handleUrlTargetChange"
+          @change="handleUrlTargetChange"
         />
       </div>
     </SimpleModal>
@@ -251,47 +251,48 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .tiptap-editor-palette {
   display: flex;
   justify-content: space-between;
   position: absolute;
-  padding: $space-1 $space-1;
+  padding: var(--space-1);
   height: 30px;
   width: 90%;
-  border-radius: $border-radius-05;
-  box-shadow: $box-shadow-1;
+  border-radius: var(--border-radius-05);
+  box-shadow: var(--box-shadow-1);
   left: 50%;
   bottom: 10px;
   transform: translateX(-50%);
   z-index: 10;
 }
 .tiptap-editor-palette__actions:hover {
-  background: $hovered;
-  border-radius: $border-radius-05;
+  background: var(--hovered);
+  border-radius: var(--border-radius-05);
 }
 .tiptap-editor-palette__actions {
   display: inline-block;
   line-height: 22px;
-  padding: $space-1 $space-1;
-  font-size: $font-size-3;
+  padding: var(--space-1) var(--space-1);
+  font-size: var(--font-size-3);
   cursor: pointer;
 }
 .tiptap-editor-palette__action-icons {
   padding-top: 2px;
 }
 .tiptap-editor-palette__is-active {
-  background: $selected !important;
-  border-radius: $border-radius-05;
-  color: $surface !important;
+  background: var(--selected) !important;
+  border-radius: var(--border-radius-05);
+  color: var(--surface) !important;
 }
 .tiptap-editor-palette__url-modal-content {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
 }
 .tiptap-editor-palette__url-input {
   width: 100%;
+  flex-basis: 190%;
+  margin-right: var(--space-2);
 }
 .v-enter {
   opacity: 0;

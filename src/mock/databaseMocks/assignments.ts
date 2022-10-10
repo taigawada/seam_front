@@ -10,8 +10,7 @@ export const assignmentsDB = [
     description:
       '<p>説明文となります。説明文となります。説明文となります。説明文となります。説明文となります。説明文となります。</p>',
     deadline: new Date(2023, 3, 14, 8, 20),
-    submissionMethod: 'other',
-    otherSubmissionMethod: 'その他の提出方法',
+    submissionMethod: 'その他の提出方法',
     isRepeat: false,
     submitOnHoliday: false,
     cyclePeriod: [],
@@ -27,8 +26,7 @@ export const assignmentsDB = [
     description:
       '<p>説明文となります。説明文となります。説明文となります。説明文となります。説明文となります。説明文となります。</p>',
     deadline: new Date(2022, 8, 14, 20, 20),
-    submissionMethod: 'other',
-    otherSubmissionMethod: 'その他の提出方法',
+    submissionMethod: 'その他の提出方法',
     isRepeat: false,
     submitOnHoliday: false,
     cyclePeriod: [],

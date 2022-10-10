@@ -17,54 +17,44 @@
       <template #data="render">
         <ResourceItem>
           <component
-            :is="render.item.room ? 'span' : 'SimpleSkelton'"
-            body
-            width="50%"
-            height="10px"
+            :is="render.item.room ? 'span' : 'SimpleSkeleton'"
+            type="text"
           >
             {{ render.item.room }}
           </component>
         </ResourceItem>
         <ResourceItem>
           <component
-            :is="render.item.syussekiNo ? 'span' : 'SimpleSkelton'"
-            body
-            width="50%"
-            height="10px"
+            :is="render.item.syussekiNo ? 'span' : 'SimpleSkeleton'"
+            type="text"
           >
             {{ render.item.syussekiNo }}
           </component>
         </ResourceItem>
         <ResourceItem distribution="left">
           <component
-            :is="render.item.name ? 'span' : 'SimpleSkelton'"
-            body
-            width="50%"
-            height="10px"
+            :is="render.item.name ? 'span' : 'SimpleSkeleton'"
+            type="text"
           >
             {{ render.item.name }}
           </component>
         </ResourceItem>
         <ResourceItem>
           <component
-            :is="render.item.submittedAt ? 'span' : 'SimpleSkelton'"
-            body
-            width="50%"
-            height="10px"
+            :is="render.item.submittedAt ? 'span' : 'SimpleSkeleton'"
+            type="text"
           >
             {{ format(new Date(), 'yyyy年MM月dd日HH時mm分') }}
           </component>
         </ResourceItem>
         <!-- <ResourceItem>
           <component
-            :is="render.item.status ? 'SimpleTag' : 'SimpleSkelton'"
+            :is="render.item.status ? 'SimpleTag' : 'SimpleSkeleton'"
             :processing="render.item.status === 'active'"
             :success="render.item.status === 'draft'"
             :warn="render.item.status === 'closed'"
             :remove="false"
-            body
-            width="50%"
-            height="10px"
+            type="text"
           >
             <span style="font-size: 0.825rem">{{ render.item.status }}</span>
           </component>
@@ -80,7 +70,7 @@ import {
   SimpleTabs,
   SimpleResourceList,
   ResourceItem,
-  SimpleSkelton,
+  SimpleSkeleton,
 } from '@simple-education-dev/components';
 import { format } from 'date-fns';
 
@@ -99,7 +89,7 @@ export default defineComponent({
     SimpleTabs,
     SimpleResourceList,
     ResourceItem,
-    SimpleSkelton,
+    SimpleSkeleton,
   },
   props: {
     loading: {
@@ -132,6 +122,4 @@ export default defineComponent({
   },
 });
 </script>
-<style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
-</style>
+<style scoped lang="scss"></style>

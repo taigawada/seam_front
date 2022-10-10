@@ -11,11 +11,13 @@
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
 import router from '@/router';
+import store from '@/store';
 import JSONDecoder from '@/utilities/JSONDecoder';
 import AssignmentDetailSettings from './AssignmentDetailSettings.vue';
 import AssignmentDetailSettingsSkelton from './AssignmentDetailSettingsSkelton.vue';
 import { AssignmentDetailSettings as AssignmentDetailSettingsType } from './useAssignmentDetailSettings';
 import { SeamApiTeacher } from '@/api/endpoints';
+import { isError } from 'lodash';
 
 export default defineComponent({
   components: {
@@ -34,26 +36,30 @@ export default defineComponent({
       props.initialValue ? props.initialValue : {}
     );
     const submissionMethods = ref<string[]>([]);
-    const teacherId = 123;
+    const teacherId = store.getters.teacherId as number;
     (async () => {
       if (router.currentRoute.path === '/assignments/new') {
         const result = await SeamApiTeacher.getSubmissionMethods(teacherId);
-        submissionMethods.value = result.data;
-        isExist.value = true;
+        if (!isError(result)) {
+          submissionMethods.value = result.data;
+          isExist.value = true;
+        } else {
+          /* エラーハンドリング */
+        }
       } else {
         const assignmentId = parseInt(router.currentRoute.params.assignmentId);
-
         const promises = [
           SeamApiTeacher.getAssignment(assignmentId),
           SeamApiTeacher.getSubmissionMethods(teacherId),
         ];
         const result = await Promise.all(promises);
-        if (result) {
-          initialValueRef.value = JSONDecoder.dateParse(result[0].data);
+        if (!result.some((res) => isError(res))) {
+          initialValueRef.value =
+            JSONDecoder.dateParse<AssignmentDetailSettingsType>(result[0].data);
           submissionMethods.value = result[1].data as string[];
           isExist.value = true;
         } else {
-          isExist.value = false;
+          /* エラーハンドリング */
         }
       }
     })();
@@ -65,6 +71,4 @@ export default defineComponent({
   },
 });
 </script>
-<style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
-</style>
+<style scoped lang="scss"></style>

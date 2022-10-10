@@ -2,8 +2,8 @@
   <div class="main-page-empty-state">
     <div
       class="notification-cards-wrapper"
-      @mouseenter="timer.stop()"
-      @mouseleave="timer.start()"
+      @mouseenter="pause()"
+      @mouseleave="resume()"
     >
       <div
         ref="notificationCardsContainer"
@@ -37,15 +37,23 @@ import {
   watchEffect,
 } from '@vue/composition-api';
 import { SimpleCard, SimpleIcon } from '@simple-education-dev/components';
-import { useElementBounding, useMousePressed, useMouse } from '@vueuse/core';
-import Intervaltimer from '../../compositions/IntervalTimer';
+import {
+  useElementBounding,
+  useMousePressed,
+  useMouse,
+  useIntervalFn,
+} from '@vueuse/core';
 import InfoCardsPagination from './InfoCardsPagination.vue';
+
+import SubmissionSammary from './notificationCards/SubmissionSammary.vue';
 
 export default defineComponent({
   components: {
     SimpleCard,
     SimpleIcon,
     InfoCardsPagination,
+
+    SubmissionSammary,
   },
   setup() {
     const numberOfCards = 3;
@@ -64,11 +72,11 @@ export default defineComponent({
         currentInfoCard.value--;
       }
     };
-    const timer = new Intervaltimer(() => {
+    const { pause, resume } = useIntervalFn(() => {
       handleNextPage();
     }, 4000);
     const handlePageChange = (index: number) => {
-      timer.reset();
+      resume();
       currentInfoCard.value = index;
     };
     const notificationCardsContainer = ref<HTMLElement | null>(null);
@@ -77,9 +85,10 @@ export default defineComponent({
     const { x } = useMouse();
     const mousePositionXDragStart = ref<number | null>(null);
     const amountMousePositionX = ref<number>(0);
+
     watchEffect(() => {
       if (pressed.value) {
-        timer.stop();
+        pause();
         if (mousePositionXDragStart.value !== null) {
           const amountX = x.value - mousePositionXDragStart.value;
           if (amountX > cardsContainerRect.width.value / 4) {
@@ -94,7 +103,7 @@ export default defineComponent({
           amountMousePositionX.value = amountX;
         }
       } else {
-        timer.reset();
+        resume();
         mousePositionXDragStart.value = null;
         amountMousePositionX.value = 0;
       }
@@ -109,11 +118,12 @@ export default defineComponent({
       }px`,
     }));
     return {
+      pause,
+      resume,
       numberOfCards,
       currentInfoCard,
       handleNextPage,
       handlePreviousPage,
-      timer,
       handlePageChange,
       notificationCardsContainer,
       cardsContainerRect,
@@ -126,7 +136,6 @@ export default defineComponent({
 });
 </script>
 <style scoped lang="scss">
-@use '@simple-education-dev/components/globalStyles' as *;
 .notification-cards-wrapper {
   margin-left: auto;
   margin-right: auto;
@@ -147,10 +156,11 @@ export default defineComponent({
 }
 .notification-card {
   flex-shrink: 0;
-  margin: $space-5 25px;
+  margin: var(--space-5) 25px;
   width: calc(100% - 50px);
+  height: 120px;
 }
 .notification-cards-pagination {
-  margin-top: $space-2;
+  margin-top: var(--space-2);
 }
 </style>
