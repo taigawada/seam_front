@@ -447,7 +447,7 @@ export default defineComponent({
     );
     const handlePreviousPage = () => {
       useTransitionWarning(store, () => {
-        router.push('/');
+        router.push({ name: 'teacherLanding' });
       });
     };
     const handleStudentPagePreview = () => {

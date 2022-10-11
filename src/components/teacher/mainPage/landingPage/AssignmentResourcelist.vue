@@ -59,7 +59,7 @@
             ICON
           </component>
         </ResourceItem>
-        <ResourceItem distribution="left">
+        <ResourceItem :distribution="render.item.title ? 'left' : 'center'">
           <component
             :is="render.item.title ? 'span' : 'SimpleSkeleton'"
             type="text"
@@ -134,7 +134,12 @@
       title="提出状況のエクスポート"
       :mainAction="{
         text: 'エクスポート',
-        onAction: () => void 0,
+        onAction: () => {
+          exportAssignmentsModalOpen = false;
+          $store.dispatch('setToast', {
+            content: '保存しました',
+          });
+        },
       }"
       :subAction="{
         text: 'キャンセル',
@@ -181,8 +186,8 @@ export interface ResourceListAssignment {
   status: 'active' | 'draft';
 }
 export const statusTranslate = (str: string, deadline: Date) => {
-  if (isPast(deadline)) return '締切済み';
   if (str === 'draft') return '下書き';
+  if (isPast(deadline)) return '締切済み';
   else if (str === 'active') return 'アクティブ';
 };
 
@@ -252,7 +257,6 @@ export default defineComponent({
     ];
     const exportMethodSelect = ref('current_page');
     const exportMethodSelectChange = (newValue: string) => {
-      console.log(newValue);
       exportMethodSelect.value = newValue;
     };
 
@@ -281,8 +285,9 @@ export default defineComponent({
       popoverMenuOpen.value = null;
     };
     const onClickRow = (index: number) => {
-      console.log(props.assignments[index]);
-      if (props.assignments[index].status === 'active') {
+      if (props.assignments[index].status === 'draft') {
+        handleTransitionDetailSettings(props.assignments[index].id);
+      } else {
         router.push({
           name: 'submissionStatus',
           params: {
@@ -290,8 +295,6 @@ export default defineComponent({
             previous: 'teacherLanding',
           },
         });
-      } else if (props.assignments[index].status === 'draft') {
-        handleTransitionDetailSettings(props.assignments[index].id);
       }
     };
 
@@ -322,7 +325,6 @@ export default defineComponent({
         return;
       }
     };
-
     return {
       format,
       exportActionsOpen,

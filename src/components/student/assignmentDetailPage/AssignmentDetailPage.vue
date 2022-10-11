@@ -82,7 +82,8 @@
         class="assignment-detail-description"
         v-html="assignment.descriptionHTML"
       ></div>
-      <SimpleSkeleton v-show="isLoading" type="text" :lines="8" />
+      <SimpleSkeleton v-show="isLoading" type="text" :lines="4" />
+      <SimpleSkeleton v-show="isLoading" type="text" :lines="4" />
     </div>
   </div>
 </template>

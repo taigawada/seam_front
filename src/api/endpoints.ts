@@ -43,14 +43,12 @@ axios.interceptors.response.use(
     return response;
   },
   function (error) {
-    switch (error.response?.status) {
-      case 401:
-        console.log('401エラー');
-        return new Error('');
-      case 403:
-        return;
-      default:
-        return;
+    if (500 <= error.response?.status) {
+      return new Error('5xx');
+    } else if (400 <= error.response?.status && error.response?.status < 500) {
+      return new Error('4xx');
+    } else {
+      return new Error('not 4xx or 5xx error');
     }
   }
 );

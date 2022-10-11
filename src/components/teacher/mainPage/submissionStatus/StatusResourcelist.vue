@@ -31,7 +31,7 @@
             {{ render.item.syussekiNo }}
           </component>
         </ResourceItem>
-        <ResourceItem distribution="left">
+        <ResourceItem :distribution="render.item.name ? 'left' : 'center'">
           <component
             :is="render.item.name ? 'span' : 'SimpleSkeleton'"
             type="text"

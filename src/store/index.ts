@@ -5,6 +5,7 @@ import currentTeacher from './modules/currentTeacher';
 import teacherTabs from './modules/teacherTabs';
 import holidays from './modules/holidays';
 import cantTransition from './modules/cantTransition';
+import toast from './modules/toast';
 
 import VuexPersistence from 'vuex-persist';
 import { Holidays } from './modules/getHolidays';
@@ -23,6 +24,7 @@ export default new Vuex.Store({
     teacherTabs,
     holidays,
     cantTransition,
+    toast,
   },
   plugins: [vuexLocal.plugin],
 });

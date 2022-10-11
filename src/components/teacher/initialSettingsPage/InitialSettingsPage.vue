@@ -1,9 +1,6 @@
 <template>
   <div>
     <img src="/src/public/hero-glow.svg" class="initial-settings-background" />
-    <!-- <div class="particle-container" :style="particleParallax">
-      <div v-for="i in 50" :key="i" class="particle"></div>
-    </div> -->
     <Transition name="card">
       <div v-if="appearFlag" class="settings-card">
         <SimpleIcon
@@ -15,13 +12,14 @@
           @click="handlePreviousCard"
         ></SimpleIcon>
         <div v-show="currentCard === 0" class="card-content">
-          <div class="card-header">welcome</div>
-          <div class="teacher-name-container">
-            <div v-show="!isNameEdit" ref="teacherNameRef" class="teacher-name">
-              {{ initialSettings.teacherName }}
+          <div class="card-header">
+            ようこそ
+            <div class="card-caption">
+              自分の名前が正しく登録されていることを確認してください。
             </div>
+          </div>
+          <div class="teacher-name-container">
             <input
-              v-show="isNameEdit"
               ref="teacherNameInputRef"
               type="text"
               class="editable-input"
@@ -29,22 +27,18 @@
               @input="handleteachernameChange"
               @blur="handleNameEditDone"
             />
-            <SimpleIcon
-              v-show="!isNameEdit"
-              class="edit-icon"
-              :source="EditPen"
-              clickable
-              fill="#fff"
-              size="18px"
-              @click="handleNameEditStart"
-            />
           </div>
           <SimpleButton normal :icon="ArrowRight" @click="handleNextCard">
             next
           </SimpleButton>
         </div>
         <div v-show="currentCard === 1" class="card-content">
-          <div class="card-header">学年を選択</div>
+          <div class="card-header">
+            学年を選択
+            <div class="card-caption">
+              自分の担任学年、または提出物をもっとも割り当てる学年を選択してください。
+            </div>
+          </div>
           <div class="selectable-card-container">
             <div
               v-for="grade in 6"
@@ -57,7 +51,12 @@
           </div>
         </div>
         <div v-show="currentCard === 2" class="card-content">
-          <div class="card-header">クラスを選択</div>
+          <div class="card-header">
+            クラスを選択
+            <div class="card-caption">
+              自分の担任クラス、または提出物をもっとも割り当てるクラスを選択してください。
+            </div>
+          </div>
           <div class="selectable-card-container selectable-card--class">
             <div
               v-for="room in 4"
@@ -72,6 +71,9 @@
         <div v-show="currentCard === 3" class="card-content">
           <div class="card-header">
             課題の提出方法で多いものを選択してください
+            <div class="card-caption">
+              必ず1つ選択してください。後からカスタマイズすることもできます。
+            </div>
           </div>
           <div class="selectable-card-container">
             <div
@@ -103,7 +105,7 @@
         <div v-show="currentCard === 4" class="card-content">
           <div class="card-header">アプリケーションを準備しています...</div>
           <div class="selectable-card-container">
-            <SimpleProgressBar :progress="progressAnimation" :duration="5000" />
+            <SimpleProgressBar :progress="progressAnimation" :duration="3000" />
           </div>
         </div>
       </div>
@@ -214,7 +216,7 @@ export default defineComponent({
       if (currentCard.value === 4) {
         nextTick(async () => {
           progressAnimation.value = 100;
-          await sleep(6000);
+          await sleep(3000);
           router.push({ path: '/' });
         });
       }
@@ -256,41 +258,6 @@ export default defineComponent({
   transition: 0.3s ease-out all;
   z-index: -1;
 }
-.particle-container {
-  z-index: -2;
-}
-.particle {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(5px);
-}
-
-@for $i from 1 through 30 {
-  @keyframes particle-animation-#{$i} {
-    100% {
-      transform: translate3d(
-        (random(90) * 1vw),
-        (random(90) * 1vh),
-        (random(100) * 1px)
-      );
-    }
-  }
-
-  .particle:nth-child(#{$i}) {
-    animation: particle-animation-#{$i} 60s infinite;
-    $size: (random(5) + 5px);
-    opacity: calc(random(100) / 100);
-    height: $size;
-    width: $size;
-    animation-delay: -$i * 0.2s;
-    transform: translate3d(
-      (random(90) * 1vw),
-      (random(90) * 1vw),
-      (random(100) * 1px)
-    );
-    background: hsl(random(180), 70%, 50%);
-  }
-}
 .settings-card {
   width: 70%;
   height: 50vh;
@@ -325,6 +292,10 @@ export default defineComponent({
   font-weight: 400;
   font-size: var(--font-size-8);
 }
+.card-caption {
+  font-weight: 400;
+  font-size: var(--font-size-4);
+}
 @mixin teachername {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   color: rgb(255, 255, 255);
@@ -337,9 +308,6 @@ export default defineComponent({
   justify-content: center;
   @include teachername;
 }
-.teacher-name {
-  position: relative;
-}
 .editable-input {
   display: inline;
   text-align: center;
@@ -349,9 +317,6 @@ export default defineComponent({
 }
 .editable-input:focus {
   outline: none;
-}
-.edit-icon {
-  position: relative;
 }
 .selectable-card-container {
   width: 50%;

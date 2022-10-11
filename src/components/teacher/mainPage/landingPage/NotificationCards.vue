@@ -16,7 +16,7 @@
           :key="index"
           class="notification-card"
         >
-          <h1>info card{{ i }}</h1>
+          <SubmissionSammary v-if="i === 1" />
         </SimpleCard>
       </div>
     </div>
@@ -45,7 +45,7 @@ import {
 } from '@vueuse/core';
 import InfoCardsPagination from './InfoCardsPagination.vue';
 
-import SubmissionSammary from './notificationCards/SubmissionSammary.vue';
+import SubmissionSammary from './notificationCards/GreetingCard.vue';
 
 export default defineComponent({
   components: {
@@ -73,7 +73,7 @@ export default defineComponent({
       }
     };
     const { pause, resume } = useIntervalFn(() => {
-      handleNextPage();
+      //handleNextPage();
     }, 4000);
     const handlePageChange = (index: number) => {
       resume();
@@ -155,6 +155,8 @@ export default defineComponent({
   backface-visibility: hidden;
 }
 .notification-card {
+  user-select: none;
+  overflow: hidden;
   flex-shrink: 0;
   margin: var(--space-5) 25px;
   width: calc(100% - 50px);

@@ -10,6 +10,7 @@
 </template>
 <script lang="ts">
 import { defineComponent, PropType, ref } from '@vue/composition-api';
+import { SimpleButton, SimpleToast } from '@simple-education-dev/components';
 import router from '@/router';
 import store from '@/store';
 import JSONDecoder from '@/utilities/JSONDecoder';
@@ -23,6 +24,9 @@ export default defineComponent({
   components: {
     AssignmentDetailSettings,
     AssignmentDetailSettingsSkelton,
+
+    SimpleButton,
+    SimpleToast,
   },
   props: {
     initialValue: {
@@ -44,7 +48,11 @@ export default defineComponent({
           submissionMethods.value = result.data;
           isExist.value = true;
         } else {
-          /* エラーハンドリング */
+          store.dispatch('setToast', {
+            content:
+              '提出方法の取得に失敗しました。時間をおいて再度お試しください。',
+            isError: true,
+          });
         }
       } else {
         const assignmentId = parseInt(router.currentRoute.params.assignmentId);
@@ -59,7 +67,11 @@ export default defineComponent({
           submissionMethods.value = result[1].data as string[];
           isExist.value = true;
         } else {
-          /* エラーハンドリング */
+          store.dispatch('setToast', {
+            content:
+              '提出物、または提出方法の取得に失敗しました。時間をおいて再度お試しください。',
+            isError: true,
+          });
         }
       }
     })();

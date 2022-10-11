@@ -66,6 +66,7 @@ import {
   SimpleStack,
 } from '@simple-education-dev/components';
 import { ArrowLeft } from '@simple-education-dev/icons';
+import router from '@/router';
 export default defineComponent({
   components: {
     SimpleButton,
@@ -73,9 +74,9 @@ export default defineComponent({
     SimpleSkeleton,
     SimpleStack,
   },
-  setup(_, context) {
+  setup(_) {
     const handlePreviousPage = () => {
-      context.emit('previous');
+      router.push({ name: 'teacherLanding' });
     };
     return { ArrowLeft, handlePreviousPage };
   },

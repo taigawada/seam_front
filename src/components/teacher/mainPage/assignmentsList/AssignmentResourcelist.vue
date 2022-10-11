@@ -33,7 +33,7 @@
           ICON
         </component>
       </ResourceItem>
-      <ResourceItem distribution="left">
+      <ResourceItem :distribution="render.item.title ? 'left' : 'center'">
         <component
           :is="render.item.title ? 'span' : 'SimpleSkeleton'"
           type="text"

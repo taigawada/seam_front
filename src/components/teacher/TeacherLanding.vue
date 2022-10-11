@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- どのコンポーネントからでも呼び出せるように、状態をStoreで管理 -->
     <SimpleModal
       :open="$store.getters.cantTransitionModalOpen"
       title="ページを離れますか?"
@@ -23,12 +24,26 @@
       :selected="$store.getters.currentTeacherTabIndex"
       @change="handleTabSelect"
     />
+    <SimpleToast
+      v-for="toast in $store.getters.toasts"
+      :key="toast.key"
+      :active="toast.active"
+      :content="toast.content"
+      :action="toast.action"
+      :error="toast.isError"
+      :duration="toast.duration"
+      @dismiss="$store.dispatch('dismissToast', toast)"
+    />
     <router-view />
   </div>
 </template>
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
-import { SimpleTabs, SimpleModal } from '@simple-education-dev/components';
+import {
+  SimpleTabs,
+  SimpleModal,
+  SimpleToast,
+} from '@simple-education-dev/components';
 import store from '@/store';
 import router from '@/router';
 import { useTransitionWarning } from './compositions/useTransitionWarning';
@@ -42,6 +57,7 @@ export default defineComponent({
     MainPage,
     SettingsPage,
     SimpleModal,
+    SimpleToast,
   },
   async beforeRouteEnter(to, from, next) {
     let teacherId = store.getters.teacherId;
